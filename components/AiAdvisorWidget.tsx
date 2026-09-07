@@ -138,7 +138,7 @@ export default function AiAdvisorWidget() {
 
       {/* Floating Chat Window Modal */}
       {isOpen && (
-        <div className="w-[360px] sm:w-[400px] h-[520px] rounded-3xl bg-white border border-slate-200 shadow-2xl flex flex-col justify-between overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="w-[calc(100vw-40px)] sm:w-[400px] max-w-[400px] h-[520px] rounded-3xl bg-white border border-slate-200 shadow-2xl flex flex-col justify-between overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           
           {/* Top Bar */}
           <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white flex items-center justify-between">

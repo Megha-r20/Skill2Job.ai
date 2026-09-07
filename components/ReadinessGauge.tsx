@@ -71,21 +71,21 @@ export default function ReadinessGauge({
       </div>
 
       {/* Criteria Breakdown Pillars */}
-      <div className="mt-4 pt-3 border-t border-slate-100 grid grid-cols-4 gap-2 text-center text-xs">
-        <div className="p-1.5 rounded-lg bg-slate-50">
-          <span className="block text-[10px] text-slate-400 uppercase font-semibold">Verified Skills</span>
+      <div className="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+        <div className="p-1.5 rounded-lg bg-slate-50 min-w-0">
+          <span className="block text-[10px] text-slate-400 uppercase font-semibold truncate">Verified Skills</span>
           <span className="font-bold text-slate-700">40% Weight</span>
         </div>
-        <div className="p-1.5 rounded-lg bg-slate-50">
-          <span className="block text-[10px] text-slate-400 uppercase font-semibold">Assessments</span>
+        <div className="p-1.5 rounded-lg bg-slate-50 min-w-0">
+          <span className="block text-[10px] text-slate-400 uppercase font-semibold truncate">Assessments</span>
           <span className="font-bold text-slate-700">25% Weight</span>
         </div>
-        <div className="p-1.5 rounded-lg bg-slate-50">
-          <span className="block text-[10px] text-slate-400 uppercase font-semibold">Job Match</span>
+        <div className="p-1.5 rounded-lg bg-slate-50 min-w-0">
+          <span className="block text-[10px] text-slate-400 uppercase font-semibold truncate">Job Match</span>
           <span className="font-bold text-slate-700">20% Weight</span>
         </div>
-        <div className="p-1.5 rounded-lg bg-slate-50">
-          <span className="block text-[10px] text-slate-400 uppercase font-semibold">Education & CGPA</span>
+        <div className="p-1.5 rounded-lg bg-slate-50 min-w-0">
+          <span className="block text-[10px] text-slate-400 uppercase font-semibold truncate">Education & CGPA</span>
           <span className="font-bold text-slate-700">15% Weight</span>
         </div>
       </div>
