@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { UserRole } from '@/lib/types';
 import { ShieldAlert, ArrowRight, Lock } from 'lucide-react';
@@ -13,10 +13,10 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const { user, role, isLoading } = useAuth();
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [deniedMessage, setDeniedMessage] = useState<string>('');
+  const allowedRoleKey = allowedRoles.join('|');
 
   useEffect(() => {
     if (isLoading) return;
@@ -52,7 +52,7 @@ export default function ProtectedRoute({ allowedRoles, children }: ProtectedRout
 
       return () => clearTimeout(timer);
     }
-  }, [user, role, isLoading, allowedRoles, router, pathname]);
+  }, [user, role, isLoading, allowedRoleKey, router]);
 
   if (isLoading || authorized === null) {
     return (

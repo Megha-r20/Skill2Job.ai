@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { User, Student, College, Company, UserRole } from '@/lib/types';
 
 interface AuthContextType {
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const switchPersona = async (role: UserRole, userId?: string) => {
+  const switchPersona = useCallback(async (role: UserRole, userId?: string) => {
     setIsLoading(true);
     try {
       const targetId = userId || DEMO_PERSONAS.find(p => p.role === role)?.userId || 'u_student_1';
@@ -124,9 +124,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const login = async (identifier: string, passwordOrOtp?: string, isOtp = false) => {
+  const login = useCallback(async (identifier: string, passwordOrOtp?: string, isOtp = false) => {
     setIsLoading(true);
     try {
       const payload = isOtp
@@ -154,28 +154,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loginWithPhone = async (phone: string, otp: string) => {
+  const loginWithPhone = useCallback(async (phone: string, otp: string) => {
     return login(phone, otp, true);
-  };
+  }, [login]);
 
-  // Gmail / Google login — directly uses our app's identity API (no Supabase redirect)
-  const loginWithGoogle = async (emailPrompt?: string) => {
-    setIsLoading(true);
-    try {
-      if (!emailPrompt) {
-        return { success: false, error: 'Please enter your Gmail address to continue.' };
-      }
-      return await loginWithGmail(emailPrompt);
-    } catch (e: any) {
-      return { success: false, error: e.message || 'Google authentication error' };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loginWithGmail = async (gmailAddress: string) => {
+  const loginWithGmail = useCallback(async (gmailAddress: string) => {
     setIsLoading(true);
     try {
       const cleanEmail = gmailAddress.trim().toLowerCase();
@@ -219,18 +204,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const setAuthSession = (newUser: User, newProfile?: any) => {
+  // Gmail / Google login — directly uses our app's identity API (no Supabase redirect)
+  const loginWithGoogle = useCallback(async (emailPrompt?: string) => {
+    setIsLoading(true);
+    try {
+      if (!emailPrompt) {
+        return { success: false, error: 'Please enter your Gmail address to continue.' };
+      }
+      return await loginWithGmail(emailPrompt);
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Google authentication error' };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loginWithGmail]);
+
+  const setAuthSession = useCallback((newUser: User, newProfile?: any) => {
     setUser(newUser);
     if (newProfile) setProfile(newProfile);
     if (typeof window !== 'undefined') {
       localStorage.setItem('s2h_user_id', newUser.id);
       localStorage.setItem('s2h_role', newUser.role);
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       if (typeof window !== 'undefined') {
@@ -242,9 +242,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Logout error:', e);
     }
-  };
+  }, []);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (!user) return;
     try {
       if (user.role === 'student' && profile?.id) {
@@ -259,25 +259,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Failed to refresh profile', e);
     }
-  };
+  }, [user, profile]);
+
+  const contextValue = useMemo(() => ({
+    user,
+    role: user?.role || 'student',
+    profile,
+    isLoading,
+    login,
+    loginWithPhone,
+    loginWithGoogle,
+    loginWithGmail,
+    switchPersona,
+    setAuthSession,
+    logout,
+    refreshProfile
+  }), [
+    user,
+    profile,
+    isLoading,
+    login,
+    loginWithPhone,
+    loginWithGoogle,
+    loginWithGmail,
+    switchPersona,
+    setAuthSession,
+    logout,
+    refreshProfile
+  ]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        role: user?.role || 'student',
-        profile,
-        isLoading,
-        login,
-        loginWithPhone,
-        loginWithGoogle,
-        loginWithGmail,
-        switchPersona,
-        setAuthSession,
-        logout,
-        refreshProfile
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
