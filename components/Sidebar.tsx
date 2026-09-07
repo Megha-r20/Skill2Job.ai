@@ -242,6 +242,22 @@ export default function Sidebar({
     router.push('/login');
   };
 
+  const handleNavigation = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    setIsMobileOpen(false);
+    router.push(href);
+  };
+
   return (
     <>
       {/* Mobile Backdrop Overlay */}
@@ -264,7 +280,8 @@ export default function Sidebar({
         <div className="p-4 border-b border-slate-100 flex items-center justify-between min-h-[72px]">
           <Link
             href="/"
-            onClick={() => setIsMobileOpen(false)}
+            prefetch
+            onClick={(event) => handleNavigation(event, '/')}
             className="flex items-center overflow-hidden group"
           >
             <Skill2HireLogo
@@ -304,7 +321,8 @@ export default function Sidebar({
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={() => setIsMobileOpen(false)}
+                      prefetch
+                      onClick={(event) => handleNavigation(event, item.href)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all relative group ${
                         isActive
                           ? 'bg-primary-50 text-primary-900 font-extrabold shadow-sm'
@@ -350,7 +368,8 @@ export default function Sidebar({
           <div className="space-y-0.5">
             <Link
               href="/login"
-              onClick={() => setIsMobileOpen(false)}
+              prefetch
+              onClick={(event) => handleNavigation(event, '/login')}
               className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-white transition-colors"
               title={isCollapsed ? 'Settings & Switch Persona' : undefined}
             >
