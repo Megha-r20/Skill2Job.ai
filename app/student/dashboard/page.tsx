@@ -27,6 +27,8 @@ import SkillBadge from '@/components/SkillBadge';
 import ReadinessGauge from '@/components/ReadinessGauge';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
+const dashboardDataCache = new Map<string, Promise<{ studentData: any; matchingJobs: any[]; courses: any[] }>>();
+
 export default function StudentDashboard() {
   const { profile } = useAuth();
   const studentId = profile?.id || 'std_1';
@@ -34,44 +36,39 @@ export default function StudentDashboard() {
   const [studentData, setStudentData] = useState<any>(null);
   const [matchingJobs, setMatchingJobs] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [stdRes, jobsRes, crsRes] = await Promise.all([
-          fetch(`/api/students/${studentId}`),
-          fetch(`/api/jobs?studentId=${studentId}&sort=best_match`),
-          fetch(`/api/courses`)
-        ]);
-
-        const sData = await stdRes.json();
-        const jData = await jobsRes.json();
-        const cData = await crsRes.json();
-
-        if (sData.student) setStudentData(sData);
-        if (jData.jobs) setMatchingJobs(jData.jobs);
-        if (cData.courses) setCourses(cData.courses);
-      } catch (e) {
-        console.error('Error loading student dashboard:', e);
-      } finally {
-        setLoading(false);
-      }
+    let request = dashboardDataCache.get(studentId);
+    if (!request) {
+      request = Promise.all([
+        fetch(`/api/students/${studentId}`).then(res => res.json()),
+        fetch(`/api/jobs?studentId=${studentId}&sort=best_match`).then(res => res.json()),
+        fetch('/api/courses').then(res => res.json())
+      ]).then(([studentResponse, jobsResponse, coursesResponse]) => ({
+        studentData: studentResponse.student ? studentResponse : null,
+        matchingJobs: jobsResponse.jobs || [],
+        courses: coursesResponse.courses || []
+      }));
+      dashboardDataCache.set(studentId, request);
     }
 
-    loadData();
-  }, [studentId]);
+    let isMounted = true;
+    request
+      .then(data => {
+        if (!isMounted) return;
+        if (data.studentData) setStudentData(data.studentData);
+        setMatchingJobs(data.matchingJobs);
+        setCourses(data.courses);
+      })
+      .catch(e => {
+        if (isMounted) console.error('Error loading student dashboard:', e);
+        dashboardDataCache.delete(studentId);
+      });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center py-16">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-3 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-slate-500 font-bold">Personalizing your career & learning roadmap...</p>
-        </div>
-      </div>
-    );
-  }
+    return () => {
+      isMounted = false;
+    };
+  }, [studentId]);
 
   const student = studentData?.student || {};
   const verifiedSkills = studentData?.verifiedSkills || [];

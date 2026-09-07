@@ -67,6 +67,8 @@ export const DEMO_PERSONAS = [
   }
 ];
 
+const sessionRequestCache = new Map<string, Promise<any>>();
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -79,19 +81,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (savedUserId) {
       // Fetch the actual authenticated user account from backend
-      fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: savedUserId })
-      })
-        .then(res => res.json())
+      let request = sessionRequestCache.get(savedUserId);
+      if (!request) {
+        request = fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: savedUserId })
+        }).then(res => res.json());
+        sessionRequestCache.set(savedUserId, request);
+      }
+
+      request
         .then(data => {
           if (data.success && data.user) {
             setUser(data.user);
             setProfile(data.profile);
           }
         })
-        .catch(e => console.error('Session load error', e))
+        .catch(e => {
+          sessionRequestCache.delete(savedUserId);
+          console.error('Session load error', e);
+        })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);

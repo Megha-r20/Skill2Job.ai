@@ -26,6 +26,8 @@ import {
 import { UserRole } from '@/lib/types';
 import SecuritySettingsModal from '@/components/SecuritySettingsModal';
 
+const notificationsRequestCache = new Map<string, Promise<any>>();
+
 interface TopHeaderProps {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
@@ -67,12 +69,18 @@ export default function TopHeader({
 
   // Fetch notifications
   useEffect(() => {
-    fetch('/api/notifications')
-      .then(res => res.json())
+    const cacheKey = user?.id || 'anonymous';
+    let request = notificationsRequestCache.get(cacheKey);
+    if (!request) {
+      request = fetch('/api/notifications').then(res => res.json());
+      notificationsRequestCache.set(cacheKey, request);
+    }
+
+    request
       .then(data => {
         if (data.notifications) setNotifications(data.notifications);
       })
-      .catch(() => {});
+      .catch(() => notificationsRequestCache.delete(cacheKey));
   }, [user]);
 
   // Click outside listener for dropdowns
