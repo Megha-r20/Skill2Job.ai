@@ -120,7 +120,7 @@ export default function AiAdvisorWidget() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 print:hidden">
+    <div className="fixed bottom-3 right-3 z-50 max-w-[calc(100vw-1.5rem)] print:hidden sm:bottom-5 sm:right-5 sm:max-w-[calc(100vw-2.5rem)]">
       
       {/* Floating Launcher Button */}
       {!isOpen && (
@@ -138,7 +138,7 @@ export default function AiAdvisorWidget() {
 
       {/* Floating Chat Window Modal */}
       {isOpen && (
-        <div className="w-[calc(100vw-40px)] sm:w-[400px] max-w-[400px] h-[520px] rounded-3xl bg-white border border-slate-200 shadow-2xl flex flex-col justify-between overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="flex h-[min(520px,calc(100dvh-1.5rem))] w-[min(400px,calc(100vw-1.5rem))] flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl animate-in fade-in slide-in-from-bottom-5 duration-200 sm:h-[min(520px,calc(100dvh-2.5rem))] sm:w-[min(400px,calc(100vw-2.5rem))]">
           
           {/* Top Bar */}
           <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white flex items-center justify-between">

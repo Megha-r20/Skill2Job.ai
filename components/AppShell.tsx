@@ -29,7 +29,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen max-w-[100vw] overflow-x-hidden bg-slate-50 flex">
       {/* 1. LEFT-SIDE VERTICAL SIDEBAR (Fixed / Sticky) */}
       <Sidebar
         isCollapsed={isCollapsed}
@@ -55,7 +55,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
 
         {/* Page Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24">
+        <main className="min-w-0 flex-1 p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-24">
           {children}
         </main>
 

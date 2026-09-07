@@ -132,8 +132,8 @@ export default function StudentDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={['student']}>
-      <div className="min-h-screen bg-slate-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="min-h-screen min-w-0 w-full bg-slate-50 py-8">
+        <div className="mx-auto w-full max-w-7xl min-w-0 px-4 sm:px-6 lg:px-8 space-y-8">
           
           {/* ========================================================================= */}
           {/* 🌟 1. ACTION-CENTRIC HERO: SEARCH & DISCOVERY                              */}
@@ -198,7 +198,7 @@ export default function StudentDashboard() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
               {quickActions.map((act) => {
                 const Icon = act.icon;
                 return (
