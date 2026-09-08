@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Student, College, Company, UserRole } from '@/lib/types';
 
 interface AuthContextType {
@@ -67,8 +67,6 @@ export const DEMO_PERSONAS = [
   }
 ];
 
-const sessionRequestCache = new Map<string, Promise<any>>();
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -81,34 +79,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (savedUserId) {
       // Fetch the actual authenticated user account from backend
-      let request = sessionRequestCache.get(savedUserId);
-      if (!request) {
-        request = fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: savedUserId })
-        }).then(res => res.json());
-        sessionRequestCache.set(savedUserId, request);
-      }
-
-      request
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: savedUserId })
+      })
+        .then(res => res.json())
         .then(data => {
           if (data.success && data.user) {
             setUser(data.user);
             setProfile(data.profile);
           }
         })
-        .catch(e => {
-          sessionRequestCache.delete(savedUserId);
-          console.error('Session load error', e);
-        })
+        .catch(e => console.error('Session load error', e))
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
     }
   }, []);
 
-  const switchPersona = useCallback(async (role: UserRole, userId?: string) => {
+  const switchPersona = async (role: UserRole, userId?: string) => {
     setIsLoading(true);
     try {
       const targetId = userId || DEMO_PERSONAS.find(p => p.role === role)?.userId || 'u_student_1';
@@ -134,9 +124,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const login = useCallback(async (identifier: string, passwordOrOtp?: string, isOtp = false) => {
+  const login = async (identifier: string, passwordOrOtp?: string, isOtp = false) => {
     setIsLoading(true);
     try {
       const payload = isOtp
@@ -164,13 +154,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  const loginWithPhone = useCallback(async (phone: string, otp: string) => {
+  const loginWithPhone = async (phone: string, otp: string) => {
     return login(phone, otp, true);
-  }, [login]);
+  };
 
-  const loginWithGmail = useCallback(async (gmailAddress: string) => {
+  // Gmail / Google login — directly uses our app's identity API (no Supabase redirect)
+  const loginWithGoogle = async (emailPrompt?: string) => {
+    setIsLoading(true);
+    try {
+      if (!emailPrompt) {
+        return { success: false, error: 'Please enter your Gmail address to continue.' };
+      }
+      return await loginWithGmail(emailPrompt);
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Google authentication error' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithGmail = async (gmailAddress: string) => {
     setIsLoading(true);
     try {
       const cleanEmail = gmailAddress.trim().toLowerCase();
@@ -214,33 +219,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  // Gmail / Google login — directly uses our app's identity API (no Supabase redirect)
-  const loginWithGoogle = useCallback(async (emailPrompt?: string) => {
-    setIsLoading(true);
-    try {
-      if (!emailPrompt) {
-        return { success: false, error: 'Please enter your Gmail address to continue.' };
-      }
-      return await loginWithGmail(emailPrompt);
-    } catch (e: any) {
-      return { success: false, error: e.message || 'Google authentication error' };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [loginWithGmail]);
-
-  const setAuthSession = useCallback((newUser: User, newProfile?: any) => {
+  const setAuthSession = (newUser: User, newProfile?: any) => {
     setUser(newUser);
     if (newProfile) setProfile(newProfile);
     if (typeof window !== 'undefined') {
       localStorage.setItem('s2h_user_id', newUser.id);
       localStorage.setItem('s2h_role', newUser.role);
     }
-  }, []);
+  };
 
-  const logout = useCallback(async () => {
+  const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       if (typeof window !== 'undefined') {
@@ -252,9 +242,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Logout error:', e);
     }
-  }, []);
+  };
 
-  const refreshProfile = useCallback(async () => {
+  const refreshProfile = async () => {
     if (!user) return;
     try {
       if (user.role === 'student' && profile?.id) {
@@ -269,37 +259,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error('Failed to refresh profile', e);
     }
-  }, [user, profile]);
-
-  const contextValue = useMemo(() => ({
-    user,
-    role: user?.role || 'student',
-    profile,
-    isLoading,
-    login,
-    loginWithPhone,
-    loginWithGoogle,
-    loginWithGmail,
-    switchPersona,
-    setAuthSession,
-    logout,
-    refreshProfile
-  }), [
-    user,
-    profile,
-    isLoading,
-    login,
-    loginWithPhone,
-    loginWithGoogle,
-    loginWithGmail,
-    switchPersona,
-    setAuthSession,
-    logout,
-    refreshProfile
-  ]);
+  };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role: user?.role || 'student',
+        profile,
+        isLoading,
+        login,
+        loginWithPhone,
+        loginWithGoogle,
+        loginWithGmail,
+        switchPersona,
+        setAuthSession,
+        logout,
+        refreshProfile
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

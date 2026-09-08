@@ -29,7 +29,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen max-w-[100vw] overflow-x-hidden bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex">
       {/* 1. LEFT-SIDE VERTICAL SIDEBAR (Fixed / Sticky) */}
       <Sidebar
         isCollapsed={isCollapsed}
@@ -41,7 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* 2. MAIN CONTENT AREA (Takes remaining available width) */}
       <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'lg:pl-[76px]' : 'lg:pl-72'
+          isCollapsed ? 'lg:pl-[76px]' : 'lg:pl-64 sm:lg:pl-72'
         }`}
       >
         {/* Top Minimal Header (Search + Notifications + Profile) */}
@@ -55,7 +55,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
 
         {/* Page Main Content */}
-        <main className="min-w-0 flex-1 p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-24">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {children}
         </main>
 
