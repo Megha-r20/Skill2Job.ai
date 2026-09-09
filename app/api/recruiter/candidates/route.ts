@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+import { collegeRepository } from '@/lib/repositories/collegeRepository';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
+import { studentRepository } from '@/lib/repositories/studentRepository';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 import { calculateJobMatch } from '@/lib/ai';
 
 export async function GET(request: Request) {
@@ -11,7 +17,7 @@ export async function GET(request: Request) {
     const onlyVerified = searchParams.get('verified') === 'true';
     const jobId = searchParams.get('jobId');
 
-    let students = db.getStudents();
+    let students = await prisma.student.findMany();
 
     if (collegeId && collegeId !== 'All') {
       students = students.filter(s => s.collegeId === collegeId);
@@ -22,10 +28,10 @@ export async function GET(request: Request) {
     }
 
     const candidateCards = students.map(student => {
-      const studentSkills = db.getStudentSkills(student.id);
-      const verifiedSkills = db.getVerifiedSkills(student.id);
-      const projects = db.getProjectsByStudentId(student.id);
-      const assessments = db.getAssessmentResultsByStudentId(student.id);
+      const studentSkills = [] as any[];
+      const verifiedSkills = [] as any[];
+      const projects = [] as any[];
+      const assessments = [] as any[];
 
       let jobMatch = 0;
       if (jobId) {

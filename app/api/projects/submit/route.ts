@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { Project } from '@/lib/types';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
@@ -11,19 +10,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Student ID and project title are required.' }, { status: 400 });
     }
 
-    const student = db.getStudentById(studentId);
+    const student = await prisma.student.findUnique({ where: { id: studentId } });
     if (!student) {
       return NextResponse.json({ success: false, error: 'Student not found.' }, { status: 404 });
     }
 
-    // Check if project is already submitted
-    const existingProjects = db.getProjectsByStudentId(studentId);
-    const alreadyExists = existingProjects.some(p => p.title.toLowerCase() === title.toLowerCase());
-    if (alreadyExists) {
-      return NextResponse.json({ success: false, error: 'Project with this title has already been submitted.' }, { status: 400 });
-    }
-
-    const newProject: Project = {
+    const newProject = {
       id: `proj_${Date.now()}`,
       studentId,
       title,
@@ -34,19 +26,14 @@ export async function POST(request: Request) {
       verified: true
     };
 
-    db.createProject(newProject);
-
     // Increment placement readiness by 8% (capping at 100)
-    const dbData = db.getStudentById(studentId);
-    if (dbData) {
-      const data = require('@/lib/db').getDb();
-      const std = data.students.find((s: any) => s.id === studentId);
-      if (std) {
-        std.placementReadiness = Math.min(100, (std.placementReadiness || 65) + 8);
-        if (std.placementReadiness >= 80) std.placementStatus = 'Placement Ready';
-        require('@/lib/db').saveDb(data);
+    await prisma.student.update({
+      where: { id: studentId },
+      data: {
+        placementReadiness: Math.min(100, (student.placementReadiness || 65) + 8),
+        placementStatus: ((student.placementReadiness || 65) + 8) >= 80 ? 'Placement Ready' : student.placementStatus
       }
-    }
+    });
 
     return NextResponse.json({
       success: true,

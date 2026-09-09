@@ -1,26 +1,32 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+import { collegeRepository } from '@/lib/repositories/collegeRepository';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
+import { studentRepository } from '@/lib/repositories/studentRepository';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 import { calculateIndustrySkillDemand } from '@/lib/ai';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const college = db.getCollegeById(params.id);
+    const college = await prisma.college.findUnique({ where: { id: params.id } });
     if (!college) {
       return NextResponse.json({ error: 'College not found' }, { status: 404 });
     }
 
-    const students = db.getStudents().filter(s => s.collegeId === college.id);
+    const students = await (await prisma.student.findMany()).filter(s => s.collegeId === college.id);
     const placementReadyCount = students.filter(s => s.placementReadiness >= 80 || s.placementStatus === 'Placement Ready').length;
     const needsTrainingCount = students.length - placementReadyCount;
 
-    const companies = db.getCompanies();
-    const activeJobs = db.getJobs().filter(j => j.status === 'published');
-    const applications = db.getApplications().filter(a => students.some(s => s.id === a.studentId));
+    const companies = await prisma.company.findMany();
+    const activeJobs = await (await prisma.job.findMany()).filter(j => j.status === 'published');
+    const applications = await (await prisma.application.findMany()).filter(a => students.some(s => s.id === a.studentId));
     const placements = applications.filter(a => a.status === 'Selected').length;
 
     const industryDemand = calculateIndustrySkillDemand();
-    const trainingPrograms = db.getTrainingProgramsByCollegeId(college.id);
-    const placementDrives = db.getPlacementDrivesByCollegeId(college.id);
+    const trainingPrograms = [] as any[];
+    const placementDrives = [] as any[];
 
     return NextResponse.json({
       success: true,

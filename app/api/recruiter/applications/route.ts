@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
 
 export async function GET(request: Request) {
   try {
-    const session = getAuthenticatedSession(request);
+    const session = await getAuthenticatedSession(request);
     
     // 1. Only Company and Admin roles can view recruiter applications
     const roleAuth = authorizeRole(session, ['company', 'admin']);
@@ -15,25 +15,13 @@ export async function GET(request: Request) {
     const jobId = searchParams.get('jobId');
     const status = searchParams.get('status');
 
-    let applications = db.getApplications();
-
-    if (companyId) {
-      applications = applications.filter(a => a.companyId === companyId);
-    }
-
-    if (jobId) {
-      applications = applications.filter(a => a.jobId === jobId);
-    }
-
-    if (status && status !== 'All') {
-      applications = applications.filter(a => a.status === status);
-    }
+    const applications = await applicationRepository.findAll({ companyId, jobId, status });
 
     // Enrich with verified skills and student details (Company least-privilege view)
     const enriched = applications.map(app => {
-      const student = db.getStudentById(app.studentId);
-      const verifiedSkills = db.getVerifiedSkills(app.studentId);
-      const studentSkills = db.getStudentSkills(app.studentId);
+      const student = app.student;
+      const verifiedSkills = student?.skills.filter(s => s.status === 'Verified') || [];
+      const studentSkills = student?.skills || [];
       return {
         ...app,
         student: student ? {
@@ -65,7 +53,7 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const session = getAuthenticatedSession(request);
+    const session = await getAuthenticatedSession(request);
     
     // 1. Only Company and Admin roles can update application status
     const roleAuth = authorizeRole(session, ['company', 'admin']);
@@ -78,7 +66,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Application ID and status are required' }, { status: 400 });
     }
 
-    const app = db.getApplicationById(applicationId);
+    const app = await applicationRepository.findById(applicationId);
     if (!app) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
@@ -91,7 +79,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    const updated = db.updateApplicationStatus(applicationId, status, notes);
+    const updated = await applicationRepository.updateStatus(applicationId, status, notes);
     return NextResponse.json({
       success: true,
       application: updated,

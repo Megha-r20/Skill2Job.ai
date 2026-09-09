@@ -1,38 +1,67 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { calculateIndustrySkillDemand } from '@/lib/ai';
+import { prisma } from '@/lib/prisma';
+import { aiService } from '@/lib/services/aiService';
+
+export const revalidate = 60; // Cache these heavy aggregations for 60 seconds (Phase 15)
 
 export async function GET() {
   try {
-    const students = db.getStudents();
-    const colleges = db.getColleges();
-    const companies = db.getCompanies();
-    const jobs = db.getJobs();
-    const applications = db.getApplications();
-    const courses = db.getCourses();
-    const verifiedSkills = db.get().verified_skills;
-    const placements = applications.filter(a => a.status === 'Selected').length;
+    const [
+      totalStudents,
+      totalColleges,
+      totalCompanies,
+      totalJobs,
+      totalApplications,
+      totalSkills,
+      placementsCount
+    ] = await Promise.all([
+      prisma.student.count(),
+      prisma.college.count(),
+      prisma.company.count(),
+      prisma.job.count(),
+      prisma.application.count(),
+      prisma.studentSkill.count({ where: { status: 'Verified' } }),
+      prisma.application.count({ where: { status: 'Selected' } })
+    ]);
 
-    const industryDemand = calculateIndustrySkillDemand();
+    const recentApplications = await prisma.application.findMany({
+      take: 10,
+      orderBy: { appliedAt: 'desc' },
+      include: { student: true, job: true }
+    });
+
+    const recentJobs = await prisma.job.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      include: { company: true }
+    });
+
+    const recentStudents = await prisma.student.findMany({
+      take: 10,
+      orderBy: { placementReadiness: 'desc' }
+    });
+
+    const colleges = await prisma.college.findMany();
+    const companies = await prisma.company.findMany();
 
     return NextResponse.json({
       success: true,
       stats: {
-        totalStudents: students.length + 2480, // Platform aggregate scale
-        totalColleges: colleges.length,
-        totalCompanies: companies.length,
-        totalJobs: jobs.length,
-        totalApplications: applications.length + 4200,
-        totalCourses: courses.length,
-        verifiedSkillsCount: verifiedSkills.length + 380,
-        placementsCount: placements + 820
+        totalStudents,
+        totalColleges,
+        totalCompanies,
+        totalJobs,
+        totalApplications,
+        verifiedSkillsCount: totalSkills,
+        placementsCount
       },
-      students: students.slice(0, 10),
+      students: recentStudents,
       colleges,
       companies,
-      jobs: jobs.slice(0, 10),
-      topDemandedSkills: industryDemand.slice(0, 8),
-      recentApplications: applications.slice(0, 10)
+      jobs: recentJobs,
+      recentApplications,
+      // Dynamic AI skill gap analysis can be injected here
+      topDemandedSkills: [] 
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

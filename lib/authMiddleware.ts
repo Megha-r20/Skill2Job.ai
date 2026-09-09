@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { db } from './db';
+import { prisma } from './prisma';
+import { userRepository } from './repositories/userRepository';
 import { User, UserRole } from './types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'skill2hire-super-jwt-secret-key-2026-production';
@@ -102,7 +103,7 @@ export function verifySessionToken(token: string): AuthSession | null {
 /**
  * Extract authenticated session from incoming NextRequest (Cookie or Bearer Header)
  */
-export function getAuthenticatedSession(request: Request | NextRequest): AuthSession | null {
+export async function getAuthenticatedSession(request: Request | NextRequest): Promise<AuthSession | null> {
   // 1. Check HttpOnly Cookie
   const cookieHeader = request.headers.get('cookie') || '';
   const cookies = Object.fromEntries(
@@ -126,16 +127,16 @@ export function getAuthenticatedSession(request: Request | NextRequest): AuthSes
     // Support demo session tokens
     if (bearerToken.startsWith('demo_token_') || bearerToken.startsWith('auth_token_')) {
       const userId = bearerToken.replace('demo_token_', '').replace('auth_token_', '');
-      const user = db.findUserById(userId);
+      const user = await userRepository.findById(userId);
       if (user) {
-        let student = user.role === 'student' ? db.getStudentByUserId(user.id) : null;
-        let college = user.role === 'college' ? db.getCollegeByUserId(user.id) : null;
-        let company = user.role === 'company' ? db.getCompanyByUserId(user.id) : null;
+        let student = user.role === 'student' ? user.studentProfile : null;
+        let college = user.role === 'college' ? user.collegeProfile : null;
+        let company = user.role === 'company' ? user.companyProfile : null;
 
         return {
           userId: user.id,
           email: user.email,
-          role: user.role,
+          role: user.role as UserRole,
           verified: user.email_verified !== false,
           studentId: student?.id,
           collegeId: college?.id,
@@ -153,16 +154,16 @@ export function getAuthenticatedSession(request: Request | NextRequest): AuthSes
   // 3. Fallback header for demo fast simulation / tests (x-user-id)
   const simulatedUserId = request.headers.get('x-user-id');
   if (simulatedUserId) {
-    const user = db.findUserById(simulatedUserId);
+    const user = await userRepository.findById(simulatedUserId);
     if (user) {
-      let student = user.role === 'student' ? db.getStudentByUserId(user.id) : null;
-      let college = user.role === 'college' ? db.getCollegeByUserId(user.id) : null;
-      let company = user.role === 'company' ? db.getCompanyByUserId(user.id) : null;
+      let student = user.role === 'student' ? user.studentProfile : null;
+      let college = user.role === 'college' ? user.collegeProfile : null;
+      let company = user.role === 'company' ? user.companyProfile : null;
 
       return {
         userId: user.id,
         email: user.email,
-        role: user.role,
+        role: user.role as UserRole,
         verified: true,
         studentId: student?.id,
         collegeId: college?.id,
@@ -223,11 +224,11 @@ export function authorizeRole(session: AuthSession | null, allowedRoles: UserRol
 /**
  * Server-Side Ownership Guard (Verifies caller owns the student / college / company record)
  */
-export function authorizeOwnership(
+export async function authorizeOwnership(
   session: AuthSession | null,
   targetResourceId: string,
   resourceType: 'student' | 'college' | 'company'
-): { authorized: boolean; errorResponse?: NextResponse } {
+): Promise<{ authorized: boolean; errorResponse?: NextResponse }> {
   if (!session) {
     return {
       authorized: false,
@@ -242,7 +243,7 @@ export function authorizeOwnership(
 
   if (resourceType === 'student') {
     // Match by studentId, userId, or email
-    const student = db.getStudentById(targetResourceId) || db.getStudentByUserId(targetResourceId);
+    const student = await prisma.student.findUnique({ where: { id: targetResourceId } }) || await prisma.student.findUnique({ where: { userId: targetResourceId } });
     if (student) {
       isOwner = student.userId === session.userId || student.id === session.studentId;
     } else {
@@ -256,10 +257,10 @@ export function authorizeOwnership(
       }
     }
   } else if (resourceType === 'college') {
-    const college = db.getCollegeById(targetResourceId);
+    const college = await prisma.college.findUnique({ where: { id: targetResourceId } });
     isOwner = college ? college.userId === session.userId || college.id === session.collegeId : targetResourceId === session.collegeId;
   } else if (resourceType === 'company') {
-    const company = db.getCompanyById(targetResourceId);
+    const company = await prisma.company.findUnique({ where: { id: targetResourceId } });
     isOwner = company ? company.userId === session.userId || company.id === session.companyId : targetResourceId === session.companyId;
   }
 

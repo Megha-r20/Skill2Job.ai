@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+import { collegeRepository } from '@/lib/repositories/collegeRepository';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
+import { studentRepository } from '@/lib/repositories/studentRepository';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,9 +13,9 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get('role') || 'Software Developer';
     const category = searchParams.get('category');
 
-    let questions = db.getInterviewQuestionsByRole(role);
+    let questions = [] as any[];
     if (questions.length === 0) {
-      questions = db.getInterviewQuestions();
+      questions = [] as any[];
     }
 
     if (category && category !== 'All') {

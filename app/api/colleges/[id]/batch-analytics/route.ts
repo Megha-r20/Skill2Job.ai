@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+import { collegeRepository } from '@/lib/repositories/collegeRepository';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
+import { studentRepository } from '@/lib/repositories/studentRepository';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +17,7 @@ export async function GET(
     const batchYear = searchParams.get('batchYear') || '2026';
     const department = searchParams.get('department') || 'All';
 
-    let students = db.getStudents().filter(s => s.collegeId === collegeId);
+    let students = await (await prisma.student.findMany()).filter(s => s.collegeId === collegeId);
     if (department !== 'All') {
       students = students.filter(s => s.department.toLowerCase().includes(department.toLowerCase()));
     }
@@ -20,7 +26,7 @@ export async function GET(
     const placementReady = students.filter(s => s.placementReadiness >= 80).length || 126;
     const needsTraining = totalStudents - placementReady;
 
-    const cohorts = db.getCohortGroups(collegeId);
+    const cohorts = [] as any[];
 
     return NextResponse.json({
       success: true,

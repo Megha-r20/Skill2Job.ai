@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id @default(uuid())
+  firebaseUid         String?
+  email               String    @unique
+  phone               String?   @unique
+  passwordHash        String
+  role                String    
+  name                String
+  avatar              String?
+  email_verified      Boolean   @default(false)
+  phone_verified      Boolean   @default(false)
+  account_status      String    @default("ACTIVE")
+  verification_status String    @default("PENDING")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  studentProfile Student?
+  collegeProfile College?
+  companyProfile Company?
+}
+
+model OtpRecord {
+  id                String   @id @default(uuid())
+  identifier        String
+  type              String   
+  purpose           String
+  otpHash           String
+  expiresAt         DateTime
+  attempts          Int      @default(0)
+  maxAttempts       Int      @default(3)
+  resendAvailableAt DateTime
+  verified          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+}
+
+model Student {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName           String
+  email              String
+  phone              String
+  collegeId          String
+  collegeName        String
+  degree             String
+  department         String
+  graduationYear     Int
+  cgpa               Float
+  location           String
+  bio                String?
+  resumeUrl          String?
+  resumeText         String?
+  placementStatus    String
+  placementReadiness Float
+
+  skills       StudentSkill[]
+  applications Application[]
+}
+
+model College {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  code            String
+  email           String
+  phone           String
+  location        String
+  website         String
+  establishedYear Int
+  totalStudents   Int
+  placementRate   Float
+  bio             String
+  logo            String?
+}
+
+model Company {
+  id          String  @id @default(uuid())
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  industry    String
+  location    String
+  website     String
+  phone       String?
+  size        String
+  description String
+  logo        String?
+  verified    Boolean @default(false)
+
+  jobs Job[]
+}
+
+model Skill {
+  id                    String @id @default(uuid())
+  name                  String
+  category              String
+  description           String
+  industryDemandPercent Float
+  demandLevel           String
+  icon                  String?
+}
+
+model StudentSkill {
+  id               String  @id @default(uuid())
+  studentId        String
+  student          Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skillId          String
+  skillName        String
+  category         String
+  status           String
+  level            String
+  score            Float?
+  credibilityScore Float?
+  verifiedAt       DateTime?
+  assessmentId     String?
+}
+
+model Job {
+  id               String   @id @default(uuid())
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyName      String
+  companyLogo      String?
+  title            String
+  department       String
+  description      String
+  responsibilities String[]
+  requirements     String[]
+  location         String
+  workMode         String
+  salary           String
+  employmentType   String
+  minCgpa          Float
+  graduationYear   Int
+  degree           String
+  branch           String
+  openings         Int
+  deadline         String
+  status           String   @default("published")
+  createdAt        DateTime @default(now())
+  
+  requiredSkills   Json     
+  applications     Application[]
+}
+
+model Application {
+  id              String   @id @default(uuid())
+  jobId           String
+  job             Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  companyId       String
+  studentName     String
+  studentEmail    String
+  studentCollege  String
+  jobTitle        String
+  companyName     String
+  matchPercentage Float
+  status          String
+  notes           String?
+  interviewFeedback Json?  
+  appliedAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  thumbnail   String?
+  instructor  String
+  level       String
+  duration    String
+  enrolled    Int      @default(0)
+  rating      Float    @default(0.0)
+  tags        String[]
+  status      String   @default("published")
+  createdAt   DateTime @default(now())
+  lessons     CourseLesson[]
+}
+
+model CourseLesson {
+  id          String   @id @default(uuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  videoUrl    String?
+  duration    Int
+  order       Int
+}
+
+model Assessment {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  skill       String
+  duration    Int
+  questions   Int
+  difficulty  String
+  type        String
+  category    String
+  status      String   @default("published")
+}
+
+model AssessmentQuestion {
+  id           String   @id @default(uuid())
+  assessmentId String
+  question     String
+  options      String[]
+  correctIndex Int
+  points       Int      @default(1)
+}
+

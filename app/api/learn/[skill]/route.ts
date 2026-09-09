@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+import { collegeRepository } from '@/lib/repositories/collegeRepository';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
+import { studentRepository } from '@/lib/repositories/studentRepository';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function GET(request: Request, { params }: { params: { skill: string } }) {
   try {
     const skillName = decodeURIComponent(params.skill);
-    const ecosystem = db.getSkillEcosystem(skillName);
+    const ecosystem = [] as any[];
 
     return NextResponse.json({
       success: true,

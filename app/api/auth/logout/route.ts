@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { logSecurityEvent, getAuthenticatedSession } from '@/lib/authMiddleware';
 
 export async function POST(request: Request) {
-  const session = getAuthenticatedSession(request);
+  const session = await getAuthenticatedSession(request);
   if (session) {
     logSecurityEvent('USER_LOGOUT', { userId: session.userId, role: session.role });
   }

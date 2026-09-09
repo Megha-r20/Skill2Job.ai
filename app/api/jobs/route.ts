@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { Job } from '@/lib/types';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { userRepository } from '@/lib/repositories/userRepository';
+
+export const revalidate = 60; // Cache this route for 60 seconds (Phase 15)
 
 export async function GET(request: Request) {
   try {
@@ -10,22 +12,14 @@ export async function GET(request: Request) {
     const location = searchParams.get('location') || '';
     const workMode = searchParams.get('workMode') || '';
     const employmentType = searchParams.get('employmentType') || '';
-    const requiredSkill = searchParams.get('skill') || searchParams.get('requiredSkill') || '';
     const companyId = searchParams.get('companyId') || '';
-    const studentId = searchParams.get('studentId') || 'std_1';
-    const onlyEligible = searchParams.get('onlyEligible') === 'true';
-    const sort = (searchParams.get('sort') as any) || 'relevance';
 
-    const jobs = db.searchJobs({
+    const jobs = await jobRepository.search({
       query: q || role,
       location,
       workMode,
       employmentType,
-      requiredSkill,
-      companyId,
-      onlyEligible,
-      sort,
-      studentId
+      companyId
     });
 
     return NextResponse.json({
@@ -67,14 +61,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Job title and required skills array are required.' }, { status: 400 });
     }
 
-    const company = companyId ? db.getCompanyById(companyId) : null;
-    const finalCompanyName = companyName || company?.name || 'Partner Recruiter';
-
-    const newJob: Job = {
-      id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    const newJob = {
       companyId: companyId || 'comp_1',
-      companyName: finalCompanyName,
-      companyLogo: companyLogo || company?.logo || 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&auto=format&fit=crop&q=80',
+      companyName: companyName || 'Partner Recruiter',
+      companyLogo: companyLogo || 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&auto=format&fit=crop&q=80',
       title,
       department: department || 'Engineering',
       description: description || 'Exciting engineering role working on scalable systems.',
@@ -97,11 +87,10 @@ export async function POST(request: Request) {
       branch: branch || 'Computer Science / IT',
       openings: openings ? Number(openings) : 3,
       deadline: deadline || '2026-12-31',
-      status: 'published',
-      createdAt: new Date().toISOString()
+      status: 'published'
     };
 
-    const created = db.createJob(newJob);
+    const created = await jobRepository.create(newJob);
 
     return NextResponse.json({
       success: true,

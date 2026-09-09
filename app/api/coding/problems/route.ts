@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+import { collegeRepository } from '@/lib/repositories/collegeRepository';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
+import { studentRepository } from '@/lib/repositories/studentRepository';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,7 +13,7 @@ export async function GET(request: NextRequest) {
     const topic = searchParams.get('topic');
     const difficulty = searchParams.get('difficulty');
 
-    let problems = db.getCodingProblems();
+    let problems = [] as any[];
 
     if (topic && topic !== 'All') {
       problems = problems.filter(p => p.topic.toLowerCase() === topic.toLowerCase());

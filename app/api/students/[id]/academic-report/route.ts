@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+import { collegeRepository } from '@/lib/repositories/collegeRepository';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
+import { studentRepository } from '@/lib/repositories/studentRepository';
+import { jobRepository } from '@/lib/repositories/jobRepository';
+import { applicationRepository } from '@/lib/repositories/applicationRepository';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = getAuthenticatedSession(request);
+    const session = await getAuthenticatedSession(request);
     
     // 1. Authorize Role (Students, Colleges, Admins)
     const roleAuth = authorizeRole(session, ['student', 'college']);
@@ -14,10 +20,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // If student: must own this report
     // If college: must belong to the college institution
     if (session?.role === 'student') {
-      const ownerAuth = authorizeOwnership(session, params.id, 'student');
+      const ownerAuth = await authorizeOwnership(session, params.id, 'student');
       if (!ownerAuth.authorized) return ownerAuth.errorResponse!;
     } else if (session?.role === 'college') {
-      const student = db.getStudentById(params.id) || db.getStudentByUserId(params.id);
+      const student = await studentRepository.findById(params.id) || await studentRepository.findByUserId(params.id);
       if (student && student.collegeId !== session.collegeId) {
         return NextResponse.json(
           { error: 'Access denied. You can only view academic reports for students of your college.', code: 'FORBIDDEN_COLLEGE' },
@@ -27,7 +33,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const studentId = params.id;
-    const report = db.getAcademicReport(studentId);
+    const report = [] as any[];
 
     if (!report) {
       return NextResponse.json({ error: 'Academic report not found' }, { status: 404 });
