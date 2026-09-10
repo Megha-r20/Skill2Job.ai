@@ -1,11 +1,12 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
-import LiveOtpNotificationBanner from '@/components/LiveOtpNotificationBanner';
+const LiveOtpNotificationBanner = dynamic(() => import('@/components/LiveOtpNotificationBanner'), { ssr: false });
 import {
   GraduationCap,
   Building2,

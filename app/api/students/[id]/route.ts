@@ -18,15 +18,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
       const student = await studentRepository.findById(params.id) || await studentRepository.findByUserId(params.id);
       if (student && student.collegeId !== session.collegeId) {
         return NextResponse.json(
-          { error: 'Access denied. You can only view students enrolled in your university.', code: 'FORBIDDEN_COLLEGE' },
-          { status: 403 }
+          { error: 'Access denied. You can only view students enrolled in your university.', code: 'FORBIDDEN_COLLEGE' }, {  status: 403 }
         );
       }
     }
 
     const student = await studentRepository.findById(params.id) || await studentRepository.findByUserId(params.id);
     if (!student) {
-      return NextResponse.json({ error: 'Student profile not found.' }, { status: 404 });
+      return NextResponse.json({ error: 'Student profile not found.' }, { status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const studentSkills = student.skills || [];
@@ -63,7 +62,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       assessmentResults
     });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }
 
@@ -89,13 +88,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const studentToUpdate = await studentRepository.findById(params.id) || await studentRepository.findByUserId(params.id);
     
     if (!studentToUpdate) {
-       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+       return NextResponse.json({ error: 'Student not found' }, {  status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const updated = await studentRepository.update(studentToUpdate.id, body);
     
-    return NextResponse.json({ success: true, student: updated });
+    return NextResponse.json({ success: true, student: updated }, {  headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

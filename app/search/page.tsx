@@ -1,9 +1,10 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import GlobalSearchBar from '@/components/GlobalSearchBar';
+const GlobalSearchBar = dynamic(() => import('@/components/GlobalSearchBar'), { ssr: false });
 import {
   Briefcase,
   BookOpen,

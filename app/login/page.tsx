@@ -1,12 +1,13 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
-import GoogleSignInModal from '@/components/GoogleSignInModal';
-import LiveOtpNotificationBanner from '@/components/LiveOtpNotificationBanner';
+const GoogleSignInModal = dynamic(() => import('@/components/GoogleSignInModal'), { ssr: false });
+const LiveOtpNotificationBanner = dynamic(() => import('@/components/LiveOtpNotificationBanner'), { ssr: false });
 import {
   ShieldCheck,
   Lock,

@@ -34,7 +34,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       certificates
     });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }
 
@@ -53,7 +53,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { skillName, category, level } = body;
 
     if (!skillName) {
-      return NextResponse.json({ error: 'Skill name is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Skill name is required' }, {  status: 400 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const allSkills = [] as any[];
@@ -78,6 +78,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
       message: `${newSkill.skillName} added as Self-Declared. Complete course & assessment to verify!`
     });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

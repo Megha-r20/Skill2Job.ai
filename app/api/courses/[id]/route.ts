@@ -12,7 +12,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   try {
     const course = await prisma.course.findUnique({ where: { id: params.id }, include: { lessons: true } });
     if (!course) {
-      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Course not found' }, {  status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const { searchParams } = new URL(request.url);
@@ -61,6 +61,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       }
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

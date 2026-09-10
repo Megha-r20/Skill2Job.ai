@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       jobs
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     } = body;
 
     if (!title || !requiredSkills || !Array.isArray(requiredSkills)) {
-      return NextResponse.json({ error: 'Job title and required skills array are required.' }, { status: 400 });
+      return NextResponse.json({ error: 'Job title and required skills array are required.' }, {  status: 400 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const newJob = {
@@ -96,8 +96,8 @@ export async function POST(request: Request) {
       success: true,
       message: 'Job published successfully!',
       job: created
-    }, { status: 201 });
+    }, {   status: 201 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

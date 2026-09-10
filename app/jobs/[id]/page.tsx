@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -25,7 +26,7 @@ import {
   FileCheck,
   Users
 } from 'lucide-react';
-import ReadinessGauge from '@/components/ReadinessGauge';
+const ReadinessGauge = dynamic(() => import('@/components/ReadinessGauge'), { ssr: false });
 
 export default function JobDetailPage() {
   const params = useParams();

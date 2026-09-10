@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       applications: enriched
     });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }
 
@@ -63,19 +63,18 @@ export async function PUT(request: Request) {
     const { applicationId, status, notes } = body;
 
     if (!applicationId || !status) {
-      return NextResponse.json({ error: 'Application ID and status are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Application ID and status are required' }, {  status: 400 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const app = await applicationRepository.findById(applicationId);
     if (!app) {
-      return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Application not found' }, {  status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     // Verify company owns this application's job posting
     if (session?.role === 'company' && session.companyId && app.companyId !== session.companyId) {
       return NextResponse.json(
-        { error: 'Access denied. You cannot modify applications for other companies.', code: 'FORBIDDEN_COMPANY' },
-        { status: 403 }
+        { error: 'Access denied. You cannot modify applications for other companies.', code: 'FORBIDDEN_COMPANY' }, {   status: 403 }
       );
     }
 
@@ -84,8 +83,8 @@ export async function PUT(request: Request) {
       success: true,
       application: updated,
       message: `Candidate application status updated to ${status}`
-    });
+    , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

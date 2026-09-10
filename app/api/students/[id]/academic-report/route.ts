@@ -26,8 +26,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       const student = await studentRepository.findById(params.id) || await studentRepository.findByUserId(params.id);
       if (student && student.collegeId !== session.collegeId) {
         return NextResponse.json(
-          { error: 'Access denied. You can only view academic reports for students of your college.', code: 'FORBIDDEN_COLLEGE' },
-          { status: 403 }
+          { error: 'Access denied. You can only view academic reports for students of your college.', code: 'FORBIDDEN_COLLEGE' }, {  status: 403 }
         );
       }
     }
@@ -36,7 +35,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const report = [] as any[];
 
     if (!report) {
-      return NextResponse.json({ error: 'Academic report not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Academic report not found' }, { status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     return NextResponse.json({
@@ -44,6 +43,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       report
     });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to complete the request. Please try again.' }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

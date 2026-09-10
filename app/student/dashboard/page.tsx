@@ -1,9 +1,10 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import GlobalSearchBar from '@/components/GlobalSearchBar';
+const GlobalSearchBar = dynamic(() => import('@/components/GlobalSearchBar'), { ssr: false });
 import {
   Briefcase,
   BookOpen,
@@ -24,7 +25,7 @@ import {
   Target
 } from 'lucide-react';
 import SkillBadge from '@/components/SkillBadge';
-import ReadinessGauge from '@/components/ReadinessGauge';
+const ReadinessGauge = dynamic(() => import('@/components/ReadinessGauge'), { ssr: false });
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function StudentDashboard() {

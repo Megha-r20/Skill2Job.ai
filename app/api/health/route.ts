@@ -16,13 +16,13 @@ export async function GET() {
       timestamp: new Date().toISOString()
     };
 
-    return NextResponse.json(status);
+    return NextResponse.json(status, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   } catch (error: any) {
     return NextResponse.json({
       status: 'unhealthy',
       database: 'disconnected',
       error: error.message,
       timestamp: new Date().toISOString()
-    }, { status: 503 });
+    }, {  status: 503 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

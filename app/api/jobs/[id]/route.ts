@@ -12,7 +12,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   try {
     const job = await prisma.job.findUnique({ where: { id: params.id } });
     if (!job) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Job not found' }, {  status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const { searchParams } = new URL(request.url);
@@ -29,6 +29,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       existingApplication
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

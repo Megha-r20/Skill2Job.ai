@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -24,7 +25,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { UserRole } from '@/lib/types';
-import SecuritySettingsModal from '@/components/SecuritySettingsModal';
+const SecuritySettingsModal = dynamic(() => import('@/components/SecuritySettingsModal'), { ssr: false });
 
 interface TopHeaderProps {
   isCollapsed: boolean;

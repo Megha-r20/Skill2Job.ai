@@ -67,6 +67,6 @@ export async function POST(request: Request) {
       testResult
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to update gateway' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to update gateway' }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

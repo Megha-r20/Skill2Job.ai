@@ -16,7 +16,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     if (!assessment) {
-      return NextResponse.json({ error: 'Assessment not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Assessment not found' }, {  status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
     const questions = [] as any[];
@@ -39,6 +39,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       totalQuestions: questions.length
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }
