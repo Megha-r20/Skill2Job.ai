@@ -255,17 +255,17 @@ export default function Sidebar({
       {/* LEFT-SIDE VERTICAL SIDEBAR */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 bg-white border-r border-slate-200 flex flex-col justify-between transition-all duration-300 ease-in-out select-none print:hidden ${
-          isCollapsed ? 'w-[76px]' : 'w-64 sm:w-72'
+          isCollapsed ? 'w-[76px]' : 'w-72'
         } ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* TOP BRANDING (Section 2) */}
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between min-h-[72px]">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between min-h-[72px] gap-2">
           <Link
             href="/"
             onClick={() => setIsMobileOpen(false)}
-            className="flex items-center overflow-hidden group"
+            className="flex items-center overflow-hidden min-w-0 group"
           >
             <Skill2HireLogo
               variant={isCollapsed ? 'icon' : 'full'}
@@ -278,7 +278,7 @@ export default function Sidebar({
           {/* Desktop Collapse Button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 items-center justify-center transition-colors"
+            className="hidden lg:flex shrink-0 w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 items-center justify-center transition-colors"
             title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -286,16 +286,16 @@ export default function Sidebar({
         </div>
 
         {/* NAVIGATION ITEMS LIST (Scrollable) */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-thin scrollbar-thumb-slate-200">
+        <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6 scrollbar-thin scrollbar-thumb-slate-200">
           {navSections.map((section, idx) => (
-            <div key={idx} className="space-y-1">
+            <div key={idx} className="space-y-1.5">
               {!isCollapsed && (
-                <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                <div className="px-3 pb-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                   {section.title}
                 </div>
               )}
 
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && item.href !== '/student/dashboard' && item.href !== '/college/dashboard' && item.href !== '/recruiter/dashboard');
@@ -345,7 +345,7 @@ export default function Sidebar({
         </div>
 
         {/* BOTTOM USER PERSONA & ACTIONS (Section 8) */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50/70 space-y-2">
+        <div className="p-4 border-t border-slate-100 bg-slate-50/70 space-y-2">
           {/* Quick Account Links */}
           <div className="space-y-0.5">
             <Link
@@ -369,17 +369,17 @@ export default function Sidebar({
           </div>
 
           {/* Current Active Persona Card */}
-          <div className={`p-2 bg-white rounded-2xl border border-slate-200 flex items-center gap-2.5 ${isCollapsed ? 'justify-center' : ''}`}>
+          <div className={`p-3 bg-white rounded-2xl border border-slate-200 flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
             <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
               {currentRole === 'student' ? '👩🎓' : currentRole === 'college' ? '🎓' : currentRole === 'company' ? '🏢' : '👑'}
             </div>
             
             {!isCollapsed && (
-              <div className="overflow-hidden leading-tight flex-1">
+              <div className="overflow-hidden leading-tight flex-1 min-w-0">
                 <span className="block font-bold text-xs text-slate-800 truncate">
                   {profile?.name || user?.name || 'Alex Rivera'}
                 </span>
-                <span className="text-[10px] font-semibold text-primary-600 capitalize block">
+                <span className="text-[10px] font-semibold text-primary-600 capitalize block truncate">
                   {currentRole} Role
                 </span>
               </div>
