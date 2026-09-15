@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
@@ -41,19 +40,19 @@ export async function POST(request: Request) {
 
     if (role === 'student') {
       profile = await userRepository.createStudentAccount({
-        fullName: name || body.fullName || 'Student Candidate',
+        fullName: name || (rawBody as any).fullName || 'Student Candidate',
         email: cleanEmail,
         phone: cleanPhone,
         password: pwd,
-        collegeName: body.collegeName || body.college || 'Apex University of Engineering',
-        department: body.department || body.course || 'Computer Science & Engineering',
-        graduationYear: parseInt(String(body.graduationYear), 10) || 2026
+        collegeName: (rawBody as any).collegeName || (rawBody as any).college || 'Apex University of Engineering',
+        department: (rawBody as any).department || (rawBody as any).course || 'Computer Science & Engineering',
+        graduationYear: parseInt(String((rawBody as any).graduationYear), 10) || 2026
       });
       user = await userRepository.findById(profile.userId);
     } else {
-      // Create a generic user for company/college for now until specific repos are created
+      // Create a generic user for company/college
       user = await userRepository.createUser({
-        name: name || body.companyName || body.collegeName || 'Partner',
+        name: name || (rawBody as any).companyName || (rawBody as any).collegeName || 'Partner',
         email: cleanEmail,
         phone: cleanPhone,
         password: pwd,

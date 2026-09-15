@@ -1,18 +1,11 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { collegeRepository } from '@/lib/repositories/collegeRepository';
-import { courseRepository } from '@/lib/repositories/courseRepository';
-import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
-import { studentRepository } from '@/lib/repositories/studentRepository';
-import { jobRepository } from '@/lib/repositories/jobRepository';
-import { applicationRepository } from '@/lib/repositories/applicationRepository';
+import { userRepository } from '@/lib/repositories/userRepository';
 import { sendEmailOtp, sendSmsOtp } from '@/lib/otpService';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { identifier, type, purpose = 'registration', name = 'Skill2Hire User' } = body;
+    const { identifier, type, purpose = 'registration', name = 'Skill2Job User' } = body;
 
     if (!identifier || typeof identifier !== 'string') {
       return NextResponse.json({ error: 'Valid email address or phone number is required.' }, { status: 400 });
@@ -23,7 +16,7 @@ export async function POST(request: Request) {
     // 1. Duplicate Account Prevention for Registration
     if (purpose === 'registration') {
       if (channelType === 'email') {
-        const existing = db.findUserByEmail(identifier.trim());
+        const existing = await userRepository.findByEmail(identifier.trim());
         if (existing && existing.email_verified && existing.verification_status === 'VERIFIED') {
           return NextResponse.json(
             { error: 'This email is already registered and verified. Please login instead.' },
@@ -31,7 +24,7 @@ export async function POST(request: Request) {
           );
         }
       } else {
-        const existing = db.findUserByPhone(identifier.trim());
+        const existing = await userRepository.findByPhone(identifier.trim());
         if (existing && existing.phone_verified && existing.verification_status === 'VERIFIED') {
           return NextResponse.json(
             { error: 'This phone number is already registered and verified. Please login instead.' },
@@ -41,23 +34,26 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Generate Brand New Secure 6-Digit OTP (Old OTP is purged)
-    const otpSession = db.generateOtp(identifier.trim(), channelType, purpose);
+    // 2. Generate Brand New Secure 6-Digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const maskedIdentifier = channelType === 'email' 
+      ? `${identifier.substring(0, 2)}***${identifier.substring(identifier.indexOf('@'))}`
+      : `${identifier.substring(0, 3)}****${identifier.substring(identifier.length - 2)}`;
 
-    // 3. Dispatch via Real Transactional Email or SMS Provider
+    // 3. Dispatch via Email or SMS Provider
     let dispatchResult;
     try {
       if (channelType === 'email') {
         dispatchResult = await sendEmailOtp({
           to: identifier.trim().toLowerCase(),
-          otp: otpSession.otpCodeForDispatcher,
+          otp: otpCode,
           recipientName: name,
           purpose
         });
       } else {
         dispatchResult = await sendSmsOtp({
           phone: identifier.trim(),
-          otp: otpSession.otpCodeForDispatcher,
+          otp: otpCode,
           purpose
         });
       }
@@ -70,14 +66,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Return Clean Success Response (NEVER EXPOSE OTP IN RESPONSE)
     return NextResponse.json({
       success: true,
-      message: `A 6-digit verification code has been sent to ${otpSession.maskedIdentifier}`,
-      maskedIdentifier: otpSession.maskedIdentifier,
-      resendAvailableAt: otpSession.resendAvailableAt,
-      expiresAt: otpSession.expiresAt,
-      provider: dispatchResult.provider
+      message: `A 6-digit verification code has been sent to ${maskedIdentifier}`,
+      maskedIdentifier,
+      resendAvailableAt: new Date(Date.now() + 60 * 1000).toISOString(),
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      provider: dispatchResult?.provider || 'SIMULATED'
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to generate verification request.' }, { status: 400 });

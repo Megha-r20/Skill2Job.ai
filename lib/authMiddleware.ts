@@ -101,6 +101,30 @@ export function verifySessionToken(token: string): AuthSession | null {
 }
 
 /**
+ * Refresh an active session token if it is close to expiration (within 6 hours)
+ */
+export function refreshSessionToken(session: AuthSession): string {
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const RENEWAL_WINDOW = 6 * 3600; // 6 hours
+
+  // If token is near expiration, return fresh 24h signed token
+  if (session.expiresAt - currentTimestamp < RENEWAL_WINDOW) {
+    return signSessionToken({
+      userId: session.userId,
+      email: session.email,
+      role: session.role,
+      verified: session.verified,
+      studentId: session.studentId,
+      collegeId: session.collegeId,
+      companyId: session.companyId
+    });
+  }
+
+  // Token is still fresh
+  return signSessionToken(session);
+}
+
+/**
  * Extract authenticated session from incoming NextRequest (Cookie or Bearer Header)
  */
 export async function getAuthenticatedSession(request: Request | NextRequest): Promise<AuthSession | null> {
@@ -151,26 +175,28 @@ export async function getAuthenticatedSession(request: Request | NextRequest): P
     if (verified) return verified;
   }
 
-  // 3. Fallback header for demo fast simulation / tests (x-user-id)
-  const simulatedUserId = request.headers.get('x-user-id');
-  if (simulatedUserId) {
-    const user = await userRepository.findById(simulatedUserId);
-    if (user) {
-      let student = user.role === 'student' ? user.studentProfile : null;
-      let college = user.role === 'college' ? user.collegeProfile : null;
-      let company = user.role === 'company' ? user.companyProfile : null;
+  // 3. Fallback header for local development / testing ONLY (disabled in production for security)
+  if (process.env.NODE_ENV === 'development') {
+    const simulatedUserId = request.headers.get('x-user-id');
+    if (simulatedUserId) {
+      const user = await userRepository.findById(simulatedUserId);
+      if (user) {
+        let student = user.role === 'student' ? user.studentProfile : null;
+        let college = user.role === 'college' ? user.collegeProfile : null;
+        let company = user.role === 'company' ? user.companyProfile : null;
 
-      return {
-        userId: user.id,
-        email: user.email,
-        role: user.role as UserRole,
-        verified: true,
-        studentId: student?.id,
-        collegeId: college?.id,
-        companyId: company?.id,
-        issuedAt: Math.floor(Date.now() / 1000),
-        expiresAt: Math.floor(Date.now() / 1000) + 86400
-      };
+        return {
+          userId: user.id,
+          email: user.email,
+          role: user.role as UserRole,
+          verified: true,
+          studentId: student?.id,
+          collegeId: college?.id,
+          companyId: company?.id,
+          issuedAt: Math.floor(Date.now() / 1000),
+          expiresAt: Math.floor(Date.now() / 1000) + 86400
+        };
+      }
     }
   }
 

@@ -2,7 +2,6 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 
-// Create a generic fallback if UPSTASH_REDIS_REST_URL is missing
 let redis: Redis | null = null;
 let ratelimit: Ratelimit | null = null;
 
@@ -12,7 +11,6 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
   });
 
-  // Create a new ratelimiter, that allows 5 requests per 1 minute
   ratelimit = new Ratelimit({
     redis: redis,
     limiter: Ratelimit.slidingWindow(5, '1 m'),
@@ -20,24 +18,46 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
   });
 }
 
+// In-Memory Fallback Rate Limiter Store (Sliding Window 60s)
+const localRateLimitStore = new Map<string, { count: number; windowStart: number }>();
+const MAX_LOCAL_REQUESTS = 10;
+const WINDOW_SIZE_MS = 60 * 1000;
+
+function checkInMemoryRateLimit(identifier: string): { success: boolean; remaining: number } {
+  const now = Date.now();
+  const entry = localRateLimitStore.get(identifier);
+
+  if (!entry || (now - entry.windowStart) > WINDOW_SIZE_MS) {
+    localRateLimitStore.set(identifier, { count: 1, windowStart: now });
+    return { success: true, remaining: MAX_LOCAL_REQUESTS - 1 };
+  }
+
+  if (entry.count >= MAX_LOCAL_REQUESTS) {
+    return { success: false, remaining: 0 };
+  }
+
+  entry.count += 1;
+  return { success: true, remaining: MAX_LOCAL_REQUESTS - entry.count };
+}
+
 export async function checkRateLimit(identifier: string) {
   if (!ratelimit) {
-    // If Redis is not configured, bypass gracefully
-    return { success: true };
+    // Use robust in-memory sliding window fallback
+    return checkInMemoryRateLimit(identifier);
   }
   
   try {
     const result = await ratelimit.limit(identifier);
     return result;
   } catch (error) {
-    console.error('Rate Limit error:', error);
-    return { success: true }; // Fail open
+    console.error('Upstash Rate Limit error, failing over to local rate limiter:', error);
+    return checkInMemoryRateLimit(identifier);
   }
 }
 
 export function rateLimitExceededResponse() {
   return NextResponse.json(
-    { error: 'Too many requests. Please try again later.' },
+    { error: 'Too many requests. Please slow down and try again in 60 seconds.' },
     { status: 429 }
   );
 }

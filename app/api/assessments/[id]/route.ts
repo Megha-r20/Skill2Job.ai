@@ -1,34 +1,21 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { collegeRepository } from '@/lib/repositories/collegeRepository';
-import { courseRepository } from '@/lib/repositories/courseRepository';
-import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
-import { studentRepository } from '@/lib/repositories/studentRepository';
-import { jobRepository } from '@/lib/repositories/jobRepository';
-import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    let assessment = await prisma.assessment.findUnique({ where: { id: params.id } });
-    if (!assessment) {
-      assessment = [] as any[];
-    }
+    const assessment = await prisma.assessment.findUnique({ where: { id: params.id } });
 
     if (!assessment) {
-      return NextResponse.json({ error: 'Assessment not found' }, {  status: 404 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+      return NextResponse.json({ error: 'Assessment not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 
-    const questions = [] as any[];
+    const questions = await prisma.assessmentQuestion.findMany({ where: { assessmentId: params.id } });
 
-    // Omit correctOptionIndex when sending questions to client to prevent client-side inspection
     const sanitizedQuestions = questions.map(q => ({
       id: q.id,
       assessmentId: q.assessmentId,
-      questionText: q.questionText,
-      type: q.type,
+      questionText: q.question,
       options: q.options,
-      codeSnippet: q.codeSnippet,
       points: q.points
     }));
 
@@ -39,6 +26,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       totalQuestions: questions.length
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

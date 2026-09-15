@@ -1,19 +1,13 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
 import { calculateIndustrySkillDemand } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
-import { collegeRepository } from '@/lib/repositories/collegeRepository';
-import { courseRepository } from '@/lib/repositories/courseRepository';
-import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
-import { studentRepository } from '@/lib/repositories/studentRepository';
-import { jobRepository } from '@/lib/repositories/jobRepository';
-import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function GET(request: Request) {
   try {
     const demand = calculateIndustrySkillDemand();
-    const totalJobs = await (await prisma.job.findMany()).filter(j => j.status === 'published').length;
-    const totalCompanies = await prisma.company.findMany().length;
+    const jobs = await prisma.job.findMany({ where: { status: 'published' } });
+    const totalJobs = jobs.length;
+    const totalCompanies = await prisma.company.count();
 
     // Aggregate by category
     const categoryDemand: Record<string, { totalPercent: number; count: number }> = {};
@@ -40,6 +34,6 @@ export async function GET(request: Request) {
       categoryStats
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

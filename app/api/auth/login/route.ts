@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { prisma } from '@/lib/prisma';
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
     // 1. Google OAuth / OpenID Connect Identity Resolution
     if (isGoogleAuth || googleCredential) {
       let googleEmail = email?.toLowerCase();
-      let googleName = body.name || 'Google User';
+      let googleName = (rawBody as any).name || 'Google User';
 
       // Parse Google ID Token payload if present
       if (googleCredential) {

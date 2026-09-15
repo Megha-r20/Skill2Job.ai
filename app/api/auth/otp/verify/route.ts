@@ -1,7 +1,7 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
+import { UserRole } from '@/lib/types';
 
 export async function POST(request: Request) {
   try {
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       ? signSessionToken({
           userId: user.id,
           email: user.email,
-          role: user.role,
+          role: user.role as UserRole,
           verified: true,
           studentId,
           collegeId,

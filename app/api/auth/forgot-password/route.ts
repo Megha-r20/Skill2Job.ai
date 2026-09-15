@@ -1,12 +1,5 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { collegeRepository } from '@/lib/repositories/collegeRepository';
-import { courseRepository } from '@/lib/repositories/courseRepository';
-import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
-import { studentRepository } from '@/lib/repositories/studentRepository';
-import { jobRepository } from '@/lib/repositories/jobRepository';
-import { applicationRepository } from '@/lib/repositories/applicationRepository';
+import { userRepository } from '@/lib/repositories/userRepository';
 import { sendEmailOtp, sendSmsOtp } from '@/lib/otpService';
 
 export async function POST(request: Request) {
@@ -18,7 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email address or Phone number is required.' }, { status: 400 });
     }
 
-    const user = db.findUserByEmailOrPhone(identifier.trim());
+    const user = await userRepository.findByEmailOrPhone(identifier.trim());
     if (!user) {
       return NextResponse.json({ error: 'No account registered with this email or phone number.' }, { status: 404 });
     }
@@ -26,30 +19,33 @@ export async function POST(request: Request) {
     const isEmail = identifier.includes('@');
     const channelType = isEmail ? 'email' : 'phone';
 
-    const otpSession = db.generateOtp(identifier.trim(), channelType, 'forgot_password');
+    // Generate 6-digit OTP code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const maskedIdentifier = isEmail 
+      ? `${identifier.substring(0, 2)}***${identifier.substring(identifier.indexOf('@'))}`
+      : `${identifier.substring(0, 3)}****${identifier.substring(identifier.length - 2)}`;
 
-    // Real-Time Delivery
     if (channelType === 'email') {
       await sendEmailOtp({
         to: user.email,
-        otp: otpSession.otpCodeForDispatcher,
+        otp: otpCode,
         recipientName: user.name,
         purpose: 'forgot_password'
       });
     } else {
       await sendSmsOtp({
         phone: user.phone || identifier.trim(),
-        otp: otpSession.otpCodeForDispatcher,
+        otp: otpCode,
         purpose: 'forgot_password'
       });
     }
 
     return NextResponse.json({
       success: true,
-      message: `Password reset verification code sent to ${otpSession.maskedIdentifier}`,
-      maskedIdentifier: otpSession.maskedIdentifier,
-      resendAvailableAt: otpSession.resendAvailableAt,
-      expiresAt: otpSession.expiresAt
+      message: `Password reset verification code sent to ${maskedIdentifier}`,
+      maskedIdentifier,
+      resendAvailableAt: new Date(Date.now() + 60 * 1000).toISOString(),
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString()
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to send reset code.' }, { status: 400 });

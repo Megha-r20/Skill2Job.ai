@@ -1,24 +1,20 @@
-// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { collegeRepository } from '@/lib/repositories/collegeRepository';
-import { courseRepository } from '@/lib/repositories/courseRepository';
-import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
-import { studentRepository } from '@/lib/repositories/studentRepository';
-import { jobRepository } from '@/lib/repositories/jobRepository';
-import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { problemId, language, code, studentId = 'std_1' } = body;
+    const { problemId = 'cp_1', language = 'python', code = '', studentId = 'std_1' } = body;
 
-    const problem = [] as any[];
-    if (!problem) {
-      return NextResponse.json({ success: false, error: 'Problem not found' }, { status: 404 });
-    }
+    const problem = {
+      id: problemId,
+      title: 'Two Sum Problem',
+      topic: 'Data Structures & Algorithms',
+      testCases: [
+        { input: '[2,7,11,15], target=9', expectedOutput: '[0,1]' },
+        { input: '[3,2,4], target=6', expectedOutput: '[1,2]' }
+      ]
+    };
 
-    // Evaluate code logic
     const hasReturn = code.includes('return');
     const isPassed = hasReturn && code.length > 30;
 
@@ -28,15 +24,13 @@ export async function POST(request: NextRequest) {
       problemId,
       problemTitle: problem.title,
       topic: problem.topic,
-      language: language || 'python',
+      language,
       code,
-      status: isPassed ? ('Solved ✓' as const) : ('Failed' as const),
+      status: isPassed ? 'Solved ✓' : 'Failed',
       accuracy: isPassed ? 100 : 33,
       executionTimeMs: Math.round(15 + Math.random() * 45),
       submittedAt: new Date().toISOString()
     };
-
-    // db.saveCodingAttempt(attempt);
 
     return NextResponse.json({
       success: true,

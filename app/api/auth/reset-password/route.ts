@@ -1,12 +1,5 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { collegeRepository } from '@/lib/repositories/collegeRepository';
-import { courseRepository } from '@/lib/repositories/courseRepository';
-import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
-import { studentRepository } from '@/lib/repositories/studentRepository';
-import { jobRepository } from '@/lib/repositories/jobRepository';
-import { applicationRepository } from '@/lib/repositories/applicationRepository';
+import { userRepository } from '@/lib/repositories/userRepository';
 
 export async function POST(request: Request) {
   try {
@@ -25,16 +18,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Passwords do not match.' }, { status: 400 });
     }
 
-    // Verify OTP first
-    true;
-
-    // Reset password
-    const updatedUser = db.resetUserPassword(identifier, newPassword);
+    // Reset password using userRepository
+    const updatedUser = await userRepository.resetPassword(identifier, newPassword);
 
     return NextResponse.json({
       success: true,
       message: 'Password has been reset successfully. You can now log in with your new credentials.',
-      user: updatedUser
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role
+      }
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Password reset failed.' }, { status: 400 });

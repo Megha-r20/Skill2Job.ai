@@ -1,12 +1,5 @@
-// @ts-nocheck
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { collegeRepository } from '@/lib/repositories/collegeRepository';
-import { courseRepository } from '@/lib/repositories/courseRepository';
-import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
-import { studentRepository } from '@/lib/repositories/studentRepository';
-import { jobRepository } from '@/lib/repositories/jobRepository';
-import { applicationRepository } from '@/lib/repositories/applicationRepository';
 
 export async function GET(request: Request) {
   try {
@@ -17,11 +10,11 @@ export async function GET(request: Request) {
     let courses = await prisma.course.findMany({ include: { lessons: true } });
 
     if (category && category !== 'All') {
-      courses = courses.filter(c => c.category.toLowerCase() === category.toLowerCase());
+      courses = courses.filter(c => c.tags.some(t => t.toLowerCase() === category.toLowerCase()));
     }
 
     if (skill) {
-      courses = courses.filter(c => c.targetSkills.some(s => s.toLowerCase() === skill.toLowerCase()));
+      courses = courses.filter(c => c.tags.some(t => t.toLowerCase().includes(skill.toLowerCase())));
     }
 
     return NextResponse.json({
@@ -30,6 +23,6 @@ export async function GET(request: Request) {
       courses
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, {  status: 500 , headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
   }
 }

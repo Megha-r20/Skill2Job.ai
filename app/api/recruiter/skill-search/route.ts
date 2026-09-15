@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { matchTalentBySkillsQuery } from '@/lib/ai';
 
@@ -11,14 +10,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'queryText is required' }, { status: 400 });
     }
 
-    const result = matchTalentBySkillsQuery(queryText, {
+    const candidates = matchTalentBySkillsQuery(queryText, {
       minCgpa: minCgpa ? Number(minCgpa) : undefined,
       collegeId: collegeId || undefined
     });
 
     return NextResponse.json({
       success: true,
-      ...result
+      queryText,
+      candidates
     });
   } catch (error) {
     console.error('Error searching talent by skills:', error);
