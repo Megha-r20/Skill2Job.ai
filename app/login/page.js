@@ -1,13 +1,12 @@
 'use client';
-import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
-const GoogleSignInModal = dynamic(() => import('@/components/GoogleSignInModal'), { ssr: false });
-const LiveOtpNotificationBanner = dynamic(() => import('@/components/LiveOtpNotificationBanner'), { ssr: false });
+import GoogleSignInModal from '@/components/GoogleSignInModal';
+import LiveOtpNotificationBanner from '@/components/LiveOtpNotificationBanner';
 import { Lock, Mail, ArrowRight, Sparkles, GraduationCap, Building2, CheckCircle2, AlertCircle, KeyRound, Eye, EyeOff, Briefcase, Sun, Moon, ArrowLeft } from 'lucide-react';
 export default function LoginPage() {
     const router = useRouter();

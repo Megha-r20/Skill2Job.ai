@@ -1,11 +1,10 @@
 'use client';
-import dynamic from 'next/dynamic';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, DEMO_PERSONAS } from '@/context/AuthContext';
 import { Menu, Search, Bell, ChevronDown, X, ShieldCheck } from 'lucide-react';
-const SecuritySettingsModal = dynamic(() => import('@/components/SecuritySettingsModal'), { ssr: false });
+import SecuritySettingsModal from '@/components/SecuritySettingsModal';
 export default function TopHeader({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen, isWorkflowOpen, setIsWorkflowOpen }) {
     const pathname = usePathname();
     const router = useRouter();

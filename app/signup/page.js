@@ -1,13 +1,12 @@
 'use client';
-import dynamic from 'next/dynamic';
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
-const LiveOtpNotificationBanner = dynamic(() => import('@/components/LiveOtpNotificationBanner'), { ssr: false });
-const GoogleSignInModal = dynamic(() => import('@/components/GoogleSignInModal'), { ssr: false });
+import LiveOtpNotificationBanner from '@/components/LiveOtpNotificationBanner';
+import GoogleSignInModal from '@/components/GoogleSignInModal';
 import { GraduationCap, Building2, Briefcase, CheckCircle2, Lock, Mail, Phone, ArrowRight, Sparkles, AlertCircle, Eye, EyeOff, Sun, Moon, ArrowLeft, User, Code2 } from 'lucide-react';
 export default function SignupPage() {
     return (<Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center p-6">

@@ -1,9 +1,8 @@
 'use client';
-import dynamic from 'next/dynamic';
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-const GlobalSearchBar = dynamic(() => import('@/components/GlobalSearchBar'), { ssr: false });
+import GlobalSearchBar from '@/components/GlobalSearchBar';
 import { Briefcase, BookOpen, Award, Video, Building2, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, MapPin, PlayCircle, ChevronRight, Layers } from 'lucide-react';
 function GlobalSearchContent() {
     const searchParams = useSearchParams();

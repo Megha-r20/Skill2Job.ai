@@ -1,11 +1,10 @@
 'use client';
-import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { MapPin, Calendar, CheckCircle2, AlertTriangle, Award, PlayCircle, ShieldCheck, Send, Users } from 'lucide-react';
-const ReadinessGauge = dynamic(() => import('@/components/ReadinessGauge'), { ssr: false });
+import ReadinessGauge from '@/components/ReadinessGauge';
 export default function JobDetailPage() {
     const params = useParams();
     const router = useRouter();
