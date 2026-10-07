@@ -1,5 +1,16 @@
 [
   {
+    "id": "msg_1791359838199",
+    "channel": "EMAIL",
+    "destination": "megha.r.s82@kalvium.community",
+    "subject": "Your Skill2Hire Verification Code: 750660",
+    "otpCode": "750660",
+    "message": "Hello Megha, your one-time verification code is 750660. Valid for 5 minutes.",
+    "provider": "Skill2Hire Live Gateway",
+    "status": "DELIVERED",
+    "timestamp": "2026-10-07T07:57:19.180Z"
+  },
+  {
     "id": "msg_1788710049307",
     "channel": "EMAIL",
     "destination": "megha202005@gmail.com",

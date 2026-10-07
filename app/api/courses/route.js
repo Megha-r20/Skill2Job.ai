@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { courseRepository } from '@/lib/repositories/courseRepository';
+
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const category = searchParams.get('category');
         const skill = searchParams.get('skill');
-        let courses = await prisma.course.findMany({ include: { lessons: true } });
+        let courses = await courseRepository.findAll();
         if (category && category !== 'All') {
-            courses = courses.filter(c => c.tags.some(t => t.toLowerCase() === category.toLowerCase()));
+            courses = courses.filter(c => c.tags?.some(t => t.toLowerCase() === category.toLowerCase()) || c.category?.toLowerCase() === category.toLowerCase());
         }
         if (skill) {
-            courses = courses.filter(c => c.tags.some(t => t.toLowerCase().includes(skill.toLowerCase())));
+            courses = courses.filter(c => c.tags?.some(t => t.toLowerCase().includes(skill.toLowerCase())) || c.title?.toLowerCase().includes(skill.toLowerCase()));
         }
         return NextResponse.json({
             success: true,
@@ -19,6 +20,6 @@ export async function GET(request) {
         });
     }
     catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

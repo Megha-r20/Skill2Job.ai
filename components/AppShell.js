@@ -39,7 +39,7 @@ export default function AppShell({ children }) {
         <TopHeader isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} isWorkflowOpen={false} setIsWorkflowOpen={() => { }}/>
 
         {/* Page Main Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-w-0 flex flex-col">
           {children}
         </main>
 
