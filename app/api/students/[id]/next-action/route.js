@@ -1,0 +1,16 @@
+import { NextResponse } from 'next/server';
+import { getNextBestAction } from '@/lib/ai';
+export async function GET(request, { params }) {
+    try {
+        const studentId = params.id;
+        const nextAction = getNextBestAction(studentId);
+        return NextResponse.json({
+            success: true,
+            nextAction
+        });
+    }
+    catch (error) {
+        console.error('Error fetching next best action:', error);
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+    }
+}

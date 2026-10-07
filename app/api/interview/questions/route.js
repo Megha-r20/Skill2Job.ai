@@ -1,0 +1,23 @@
+import { NextResponse } from 'next/server';
+export async function GET(request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const role = searchParams.get('role') || 'Software Developer';
+        const category = searchParams.get('category');
+        let questions = [];
+        if (questions.length === 0) {
+            questions = [];
+        }
+        if (category && category !== 'All') {
+            questions = questions.filter(q => q.category.toLowerCase() === category.toLowerCase());
+        }
+        return NextResponse.json({
+            success: true,
+            questions
+        });
+    }
+    catch (error) {
+        console.error('Error fetching interview questions:', error);
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+    }
+}
