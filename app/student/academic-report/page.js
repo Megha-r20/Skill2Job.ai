@@ -44,22 +44,22 @@ export default function StudentAcademicReportPage() {
     const displayedSemesters = activeSemester === 'all'
         ? report.semesters
         : report.semesters.filter(s => s.semesterNumber === activeSemester);
-    return (<div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
+    return (<div className="w-full min-h-screen bg-slate-50/60 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 space-y-6 transition-colors print:bg-white print:py-0 print:p-0">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Navigation & Print Controls (Hidden on Print) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-          <Link href="/student/dashboard" className="text-xs font-bold text-slate-500 hover:text-primary-600">
+          <Link href="/student/dashboard" className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
             ← Back to Student Dashboard
           </Link>
 
           <div className="flex items-center gap-2">
-            <button onClick={handleShare} className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-1.5">
+            <button onClick={handleShare} className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm flex items-center gap-1.5 transition-colors">
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600"/> : <Share2 className="w-3.5 h-3.5"/>}
               <span>{copied ? 'Link Copied' : 'Share Verification Link'}</span>
             </button>
 
-            <button onClick={handlePrint} className="px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-primary-600 shadow-md transition-colors flex items-center gap-1.5">
+            <button onClick={handlePrint} className="px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-900 dark:bg-primary-600 text-white hover:bg-primary-600 dark:hover:bg-primary-500 shadow-md transition-colors flex items-center gap-1.5">
               <Printer className="w-3.5 h-3.5"/>
               <span>Print Official Transcript</span>
             </button>
