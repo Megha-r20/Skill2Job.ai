@@ -333,24 +333,24 @@ export default function UniversalCompilerPage() {
       </div>);
     };
     return (<ProtectedRoute allowedRoles={['student', 'admin']}>
-      <div className="min-h-screen bg-slate-50 py-8">
+      <div className="w-full min-h-screen bg-slate-50/60 dark:bg-slate-950 py-8 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           
           {/* Header Area */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
                   <Cpu className="w-6 h-6"/>
                 </div>
                 <div>
-                  <h1 className="text-xl font-black text-slate-900">Universal Compiler Playground</h1>
-                  <p className="text-xs text-slate-500">Run Node, React, Next.js, HTML, Python, Java, SQL, and C++ locally in a secure sandbox.</p>
+                  <h1 className="text-xl font-black text-slate-900 dark:text-white">Universal Compiler Playground</h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Run Node, React, Next.js, HTML, Python, Java, SQL, and C++ locally in a secure sandbox.</p>
                 </div>
               </div>
             </div>
             
-            <Link href="/student/dashboard" className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors shrink-0 self-start sm:self-auto">
+            <Link href="/student/dashboard" className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors shrink-0 self-start sm:self-auto">
               <ChevronLeft className="w-4 h-4"/> Back to Dashboard
             </Link>
           </div>
@@ -361,8 +361,8 @@ export default function UniversalCompilerPage() {
             <div className="lg:col-span-3 space-y-4">
               
               {/* Selector Box */}
-              <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Select Environment</h3>
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 transition-colors">
+                <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Select Environment</h3>
                 
                 <div className="space-y-1.5">
                   {[
@@ -378,14 +378,14 @@ export default function UniversalCompilerPage() {
             const Icon = env.icon;
             const isSelected = compilerLanguage === env.id;
             return (<button key={env.id} onClick={() => handleEnvironmentChange(env.id)} className={`w-full p-3 rounded-2xl text-left border flex items-center gap-3 transition-all ${isSelected
-                    ? 'bg-slate-900 border-slate-950 text-white shadow-md'
-                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'}`}>
-                        <div className={`p-2 rounded-xl border shrink-0 ${isSelected ? 'bg-slate-800 border-slate-700 text-cyan-400' : 'bg-white border-slate-200 text-slate-500'}`}>
+                    ? 'bg-slate-900 dark:bg-primary-600 border-slate-950 dark:border-primary-500 text-white shadow-md'
+                    : 'bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300'}`}>
+                        <div className={`p-2 rounded-xl border shrink-0 ${isSelected ? 'bg-slate-800 dark:bg-primary-700/80 border-slate-700 dark:border-primary-400 text-cyan-400 dark:text-white' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}>
                           <Icon className="w-4 h-4"/>
                         </div>
                         <div className="leading-tight overflow-hidden">
                           <span className="block font-bold text-xs truncate">{env.label}</span>
-                          <span className={`text-[9px] block ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>{env.desc}</span>
+                          <span className={`text-[9px] block ${isSelected ? 'text-slate-300 dark:text-primary-100' : 'text-slate-500 dark:text-slate-400'}`}>{env.desc}</span>
                         </div>
                       </button>);
         })}
@@ -393,9 +393,9 @@ export default function UniversalCompilerPage() {
               </div>
 
               {/* File Explorer Box */}
-              <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 transition-colors">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                     <FolderOpen className="w-4 h-4 text-slate-400"/> File Explorer
                   </h3>
                 </div>
@@ -404,8 +404,8 @@ export default function UniversalCompilerPage() {
                   {Object.keys(files).map((fileName) => {
             const isActive = activeFile === fileName;
             return (<button key={fileName} onClick={() => handleSelectFile(fileName)} className={`w-full p-2.5 rounded-xl text-left text-xs font-semibold flex items-center gap-2 transition-all ${isActive
-                    ? 'bg-primary-50 text-primary-900 border border-primary-100 font-bold'
-                    : 'hover:bg-slate-50 text-slate-600 border border-transparent'}`}>
+                    ? 'bg-primary-50 dark:bg-primary-950/60 text-primary-900 dark:text-primary-300 border border-primary-200 dark:border-primary-800/50 font-bold'
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 border border-transparent'}`}>
                         <File className={`w-4 h-4 ${isActive ? 'text-primary-600' : 'text-slate-400'}`}/>
                         <span className="truncate">{fileName}</span>
                       </button>);
@@ -421,7 +421,7 @@ export default function UniversalCompilerPage() {
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 
                 {/* Editor Window */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[500px] transition-colors">
                   {/* Editor Header */}
                   <div className="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -458,18 +458,18 @@ export default function UniversalCompilerPage() {
                 </div>
 
                 {/* Simulated Web Browser / Live Output view */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[500px] transition-colors">
                   
                   {/* Browser Sandbox Header */}
-                  <div className="px-4 py-3 bg-slate-100 border-b border-slate-200 flex items-center gap-3">
+                  <div className="px-4 py-3 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 transition-colors">
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300"/>
-                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300"/>
-                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300"/>
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"/>
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"/>
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"/>
                     </div>
 
                     {/* Virtual URL Bar */}
-                    <div className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1 text-[11px] text-slate-600 font-mono flex items-center justify-between">
+                    <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1 text-[11px] text-slate-600 dark:text-slate-300 font-mono flex items-center justify-between transition-colors">
                       <span className="truncate">
                         {compilerLanguage === 'node' || compilerLanguage === 'next'
             ? `http://localhost:3000${simulatedEndpoint}`
@@ -480,7 +480,7 @@ export default function UniversalCompilerPage() {
                   </div>
 
                   {/* Browser Live Preview Viewport */}
-                  <div className="flex-1 bg-slate-100 p-4 flex flex-col justify-center overflow-auto">
+                  <div className="flex-1 bg-slate-100 dark:bg-slate-950/60 p-4 flex flex-col justify-center overflow-auto transition-colors">
                     
                     {/* Node Express simulated interface */}
                     {compilerLanguage === 'node' && (<div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-full min-h-[300px] w-full">
@@ -505,19 +505,19 @@ export default function UniversalCompilerPage() {
                       </div>)}
 
                     {/* Standard static HTML & compiled React app rendering iframe */}
-                    {(compilerLanguage === 'html' || compilerLanguage === 'react') && (<div className="w-full h-full min-h-[350px] bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-inner">
+                    {(compilerLanguage === 'html' || compilerLanguage === 'react') && (<div className="w-full h-full min-h-[350px] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-inner transition-colors">
                         {previewSrcDoc ? (<iframe srcDoc={previewSrcDoc} title="Interactive compiler virtual preview" sandbox="allow-scripts" className="w-full h-full border-0 min-h-[350px]"/>) : (<div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center min-h-[350px] space-y-2">
-                            <Globe className="w-10 h-10 text-slate-300 animate-pulse"/>
-                            <span className="text-xs font-bold text-slate-500">Virtual Preview Frame Standby</span>
-                            <span className="text-[10px] text-slate-400 max-w-[200px]">Click the Run button at the top of the editor workspace to transpile files.</span>
+                            <Globe className="w-10 h-10 text-slate-300 dark:text-slate-600 animate-pulse"/>
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Virtual Preview Frame Standby</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 max-w-[200px]">Click the Run button at the top of the editor workspace to transpile files.</span>
                           </div>)}
                       </div>)}
 
                     {/* Backend python/cpp/java console standalone prompt */}
-                    {['python', 'cpp', 'java', 'sql'].includes(compilerLanguage) && (<div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center min-h-[350px] space-y-2 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl">
-                        <Terminal className="w-10 h-10 text-slate-300"/>
-                        <span className="text-xs font-bold text-slate-500">Script Console View</span>
-                        <span className="text-[10px] text-slate-400 max-w-[200px]">Output details for compiler console scripts are mapped directly to the terminal panel below.</span>
+                    {['python', 'cpp', 'java', 'sql'].includes(compilerLanguage) && (<div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center min-h-[350px] space-y-2 bg-slate-50 dark:bg-slate-900/60 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl transition-colors">
+                        <Terminal className="w-10 h-10 text-slate-300 dark:text-slate-600"/>
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Script Console View</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 max-w-[200px]">Output details for compiler console scripts are mapped directly to the terminal panel below.</span>
                       </div>)}
 
                   </div>
