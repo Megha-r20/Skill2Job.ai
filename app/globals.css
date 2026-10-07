@@ -4,42 +4,265 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base Neutral Tiers (Light) */
+    --background: 220 20% 98%;
+    --foreground: 224 45% 11%;
+
+    /* Card & Surface Surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 224 45% 11%;
+    --card-hover: 220 25% 97%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 45% 11%;
+
+    /* Brand Accents derived from official logo */
+    --primary: 192 95% 44%; /* Electric Cyan */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 258 85% 62%; /* Royal Violet */
+    --secondary-foreground: 0 0% 100%;
+
+    /* UI Neutrals & States */
+    --muted: 220 18% 94%;
+    --muted-foreground: 220 15% 46%;
+
+    --accent: 258 90% 96%;
+    --accent-foreground: 258 85% 45%;
+
+    --destructive: 350 89% 56%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 158 64% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 48%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 204 94% 50%;
+    --info-foreground: 0 0% 100%;
+
+    /* Role Distinct Accents */
+    --role-student: 192 95% 44%;
+    --role-college: 258 85% 62%;
+    --role-recruiter: 326 85% 54%;
+    --role-admin: 38 92% 48%;
+
+    /* Hairlines & Focus Rings */
+    --border: 220 16% 90%;
+    --input: 220 16% 90%;
+    --ring: 192 95% 44%;
+
+    /* Radii Tokens */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+
+    /* Motion Curves */
+    --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dark {
+    /* Base Neutral Tiers (Dark - Deep Obsidian / Midnight Space) */
+    --background: 232 45% 6%; /* #070a14 */
+    --foreground: 210 40% 98%; /* #f8fafc */
+
+    /* Card & Surface Surfaces */
+    --card: 228 35% 10%; /* #0e1424 */
+    --card-foreground: 210 40% 98%;
+    --card-hover: 228 32% 13%; /* #141c33 */
+
+    --popover: 228 38% 12%; /* #10182b */
+    --popover-foreground: 210 40% 98%;
+
+    /* Brand Accents (Vibrant Luminescent Neon for Dark Mode) */
+    --primary: 190 95% 52%; /* Electric Cyan Neon */
+    --primary-foreground: 232 50% 7%;
+
+    --secondary: 260 92% 70%; /* Electric Violet Neon */
+    --secondary-foreground: 232 50% 7%;
+
+    /* UI Neutrals & States */
+    --muted: 226 28% 15%; /* #172036 */
+    --muted-foreground: 217 19% 65%; /* #94a3b8 */
+
+    --accent: 258 40% 18%;
+    --accent-foreground: 258 90% 88%;
+
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 158 64% 46%;
+    --success-foreground: 232 50% 7%;
+
+    --warning: 38 92% 52%;
+    --warning-foreground: 232 50% 7%;
+
+    --info: 204 94% 56%;
+    --info-foreground: 232 50% 7%;
+
+    /* Role Distinct Accents */
+    --role-student: 190 95% 52%;
+    --role-college: 260 92% 70%;
+    --role-recruiter: 326 90% 65%;
+    --role-admin: 38 92% 55%;
+
+    /* Hairlines & Focus Rings */
+    --border: 226 26% 18%;
+    --input: 226 26% 18%;
+    --ring: 190 95% 52%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased selection:bg-primary-500 selection:text-white;
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary transition-colors duration-200;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* Custom smooth scrollbar */
+/* ========================================================================= */
+/* 💎 PREMIUM UTILITIES: Glass, Gradients, Borders, Noise, Grid, Glows       */
+/* ========================================================================= */
+
+@layer utilities {
+  /* Fluid and Tabular Typography */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Glassmorphism Surfaces */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+  }
+
+  .dark .glass {
+    background: rgba(14, 20, 36, 0.75);
+    backdrop-filter: blur(16px) saturate(190%);
+    -webkit-backdrop-filter: blur(16px) saturate(190%);
+  }
+
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .dark .glass-subtle {
+    background: rgba(14, 20, 36, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Hairline Gradient Border */
+  .border-gradient {
+    border: 1px solid transparent;
+    background-image: linear-gradient(var(--card), var(--card)),
+                      linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--secondary) / 0.4));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+
+  /* Signature AI Glow Effect */
+  .glow-ai {
+    position: relative;
+  }
+  .glow-ai::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+  }
+  .glow-ai:hover::before {
+    opacity: 1;
+  }
+
+  /* Text Gradients */
+  .text-gradient-brand {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-silver {
+    background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Subtle Background Dot / Grid Patterns */
+  .bg-grid-pattern {
+    background-size: 32px 32px;
+    background-image: linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+                      linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
+  }
+
+  .bg-dots-pattern {
+    background-size: 24px 24px;
+    background-image: radial-gradient(hsl(var(--muted-foreground) / 0.2) 1px, transparent 1px);
+  }
+
+  /* Card Hover Lift */
+  .hover-lift {
+    transition: transform 0.25s var(--ease-expo), box-shadow 0.25s var(--ease-expo);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* ========================================================================= */
+/* 📜 Custom Scrollbars for Both Light & Dark Themes                         */
+/* ========================================================================= */
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: hsl(var(--muted-foreground) / 0.25);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: hsl(var(--muted-foreground) / 0.45);
 }
 
-.gradient-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
-  backdrop-filter: blur(10px);
+/* Accessible focus visible outlines */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

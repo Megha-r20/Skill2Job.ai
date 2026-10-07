@@ -1,11 +1,31 @@
 import type { Metadata } from 'next';
+import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import AppShell from '@/components/AppShell';
+
+const fontSans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const fontDisplay = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Skill2Job.ai — AI-Powered Hiring & Skill Verification Platform',
-  description: 'An intelligent recruitment and talent discovery SaaS. Connects verified student talent directly with top employers using LLM-driven resume matching, skill verification, and automated interview coaching.',
+  description: 'An intelligent recruitment and talent discovery SaaS connecting verified student talent directly with top employers using LLM-driven resume matching, skill verification, and automated interview coaching.',
   keywords: 'AI recruitment, skill verification, job board, resume matcher, tech hiring, student placement',
   openGraph: {
     title: 'Skill2Job.ai — AI-Powered Hiring & Skill Verification',
@@ -41,12 +61,40 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-screen bg-slate-50 font-sans antialiased">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`h-full ${fontSans.variable} ${fontDisplay.variable} ${fontMono.variable}`}
+    >
+      <head>
+        {/* Anti-FOUC Blocking Theme Initializer */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('skill2hire-theme');
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.style.colorScheme = 'dark';
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.style.colorScheme = 'light';
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-primary/20 selection:text-primary transition-colors duration-150">
         <AuthProvider>
-          <AppShell>
-            {children}
-          </AppShell>
+          <ThemeProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

@@ -1,16 +1,19 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
 const LiveOtpNotificationBanner = dynamic(() => import('@/components/LiveOtpNotificationBanner'), { ssr: false });
+const GoogleSignInModal = dynamic(() => import('@/components/GoogleSignInModal'), { ssr: false });
+
 import {
   GraduationCap,
   Building2,
-  Users,
+  Briefcase,
   ShieldCheck,
   CheckCircle2,
   Lock,
@@ -18,26 +21,31 @@ import {
   Phone,
   ArrowRight,
   Sparkles,
-  KeyRound,
   AlertCircle,
-  Clock,
-  RefreshCw,
   Eye,
   EyeOff,
-  Briefcase,
+  Sun,
+  Moon,
+  ArrowLeft,
+  Check,
+  Zap,
+  Star,
+  Award,
   Layers,
-  BookOpen,
-  Award
+  User,
+  Code2
 } from 'lucide-react';
 import { UserRole } from '@/lib/types';
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center p-6">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
       <SignupContent />
     </Suspense>
   );
@@ -46,12 +54,16 @@ export default function SignupPage() {
 function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, setAuthSession } = useAuth();
+  const { setAuthSession } = useAuth();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
-  // Step 1: Role Selection
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>('student');
+  // Wizard Step: 1 = 'credentials' | 2 = 'profile' | 3 = 'otp_email' | 4 = 'completed'
+  const [currentStep, setCurrentStep] = useState<'credentials' | 'profile' | 'otp_email' | 'completed'>('credentials');
 
-  // Form Fields
+  // Category 1: Role Selection
+  const [selectedRole, setSelectedRole] = useState<UserRole>('student');
+
+  // Category 2: Basic Account Credentials
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -59,8 +71,10 @@ function SignupContent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleVerified, setIsGoogleVerified] = useState(false);
+  const [googleModalOpen, setGoogleModalOpen] = useState(false);
 
-  // Student specific details
+  // Category 3: Role Specific Profiles
+  // Student Profile
   const [collegeName, setCollegeName] = useState('Apex University of Engineering');
   const [department, setDepartment] = useState('Computer Science & Engineering');
   const [graduationYear, setGraduationYear] = useState('2026');
@@ -68,20 +82,18 @@ function SignupContent() {
   const [skillsInput, setSkillsInput] = useState('Python, Data Structures, SQL, Git');
   const [resumeUrl, setResumeUrl] = useState('https://storage.skill2hire.com/resumes/alex_resume.pdf');
 
-  // College specific details
+  // College Profile
   const [website, setWebsite] = useState('https://apexuniversity.edu');
   const [address, setAddress] = useState('Academic City Campus, Tech Corridor');
   const [contactPerson, setContactPerson] = useState('Dean of Placements & Training');
 
-  // Company specific details
+  // Company Profile
   const [industry, setIndustry] = useState('Technology & Cloud Systems');
   const [recruiterName, setRecruiterName] = useState('Lead Technical Recruiter');
 
-  // Verification Step: 'form' | 'otp_email' | 'completed'
-  const [step, setStep] = useState<'form' | 'otp_email' | 'completed'>('form');
-  
-  // OTP States
-  const [emailOtp, setEmailOtp] = useState('');
+  // OTP Verification state
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [maskedEmail, setMaskedEmail] = useState('');
   const [emailCooldown, setEmailCooldown] = useState(0);
 
@@ -89,7 +101,7 @@ function SignupContent() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Prefill Google Identity if redirected from Google Auth
+  // Prefill Google Identity from query params if redirected
   useEffect(() => {
     const googleEmail = searchParams.get('email');
     const googleName = searchParams.get('name');
@@ -97,55 +109,86 @@ function SignupContent() {
       setEmail(googleEmail);
       setIsGoogleVerified(true);
       if (googleName) setName(googleName);
-      setSuccessMsg(`Google identity verified for ${googleEmail}. Complete your profile below.`);
+      setSuccessMsg(`Google identity verified for ${googleEmail}. Continue with profile details.`);
     }
   }, [searchParams]);
 
-  // Start Cooldown timer
+  // Cooldown timer for OTP
   const startCooldown = () => {
     setEmailCooldown(60);
     const timer = setInterval(() => {
       setEmailCooldown((prev) => {
-        if (prev <= 1) { clearInterval(timer); return 0; }
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
   };
 
-  // Step 1: Submit Profile & Send Real-Time Email OTP
-  const handleInitiateRegistration = async (e: React.FormEvent) => {
+  // Password Strength evaluation
+  const getPasswordStrength = (pwd: string) => {
+    if (!pwd) return { score: 0, label: '', color: 'bg-muted' };
+    let score = 0;
+    if (pwd.length >= 6) score += 1;
+    if (pwd.length >= 10) score += 1;
+    if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+    switch (score) {
+      case 1: return { score: 1, label: 'Weak', color: 'bg-rose-500' };
+      case 2: return { score: 2, label: 'Fair', color: 'bg-amber-500' };
+      case 3: return { score: 3, label: 'Good', color: 'bg-sky-500' };
+      case 4: return { score: 4, label: 'Strong', color: 'bg-emerald-500' };
+      default: return { score: 0, label: 'Too Short', color: 'bg-rose-500' };
+    }
+  };
+
+  const passwordStrength = getPasswordStrength(password);
+
+  // Validate Step 1 (Account Credentials) and advance to Step 2 (Profile Details)
+  const handleProceedToProfile = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
 
-    if (!selectedRole) {
-      setError('Please select a role to register.');
+    if (!email || !email.includes('@')) {
+      setError('Please provide a valid email address.');
       return;
     }
 
-    if (!email) {
-      setError('Please enter a valid email address.');
+    if (!name.trim()) {
+      setError('Please enter your full name or account name.');
       return;
     }
 
-    if (!isGoogleVerified && (!password || password !== confirmPassword)) {
-      setError('Passwords do not match or are missing.');
-      return;
+    if (!isGoogleVerified) {
+      if (!password || password.length < 6) {
+        setError('Password must contain at least 6 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
     }
 
-    if (!isGoogleVerified && password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
+    setCurrentStep('profile');
+  };
 
+  // Submit Final Registration (Step 2 -> OTP Step 3)
+  const handleFinalRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
     setLoading(true);
 
     try {
-      // 1. Create account in pending verification state
-      const skillsList = skillsInput.split(',').map(s => s.trim()).filter(Boolean);
+      const skillsList = skillsInput.split(',').map((s) => s.trim()).filter(Boolean);
       const payload: any = {
         role: selectedRole,
-        name: name || (selectedRole === 'student' ? 'Student Candidate' : selectedRole === 'college' ? collegeName : 'Company Partner'),
+        name: name.trim() || (selectedRole === 'student' ? 'Student Candidate' : selectedRole === 'college' ? collegeName : 'Company Partner'),
         email: email.trim().toLowerCase(),
         phone: phone.trim() || '+91 98765 00000',
         password: password || 'google_oauth_verified',
@@ -172,7 +215,7 @@ function SignupContent() {
 
       if (!regRes.ok) throw new Error(regData.error || 'Registration failed.');
 
-      // 2. Dispatch Real-Time 6-Digit Email OTP
+      // Dispatch 6-Digit Email OTP
       const otpRes = await fetch('/api/auth/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -189,7 +232,7 @@ function SignupContent() {
 
       setMaskedEmail(otpData.maskedIdentifier || email);
       startCooldown();
-      setStep('otp_email');
+      setCurrentStep('otp_email');
       setSuccessMsg(otpData.message || `A 6-digit verification code has been dispatched to ${email}.`);
     } catch (err: any) {
       setError(err.message || 'Registration failed.');
@@ -198,9 +241,48 @@ function SignupContent() {
     }
   };
 
-  // Step 2: Verify Real-Time Email OTP
+  // Handle OTP Box Input Changes
+  const handleOtpBoxChange = (index: number, val: string) => {
+    const char = val.slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = char;
+    setOtpDigits(newDigits);
+
+    if (char && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text').trim().replace(/\D/g, '');
+    if (!pasteData) return;
+
+    const chars = pasteData.slice(0, 6).split('');
+    const newDigits = [...otpDigits];
+    chars.forEach((c, i) => {
+      if (i < 6) newDigits[i] = c;
+    });
+    setOtpDigits(newDigits);
+    const focusIdx = Math.min(chars.length, 5);
+    otpInputRefs.current[focusIdx]?.focus();
+  };
+
+  // Verify OTP
   const handleVerifyEmailOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    const fullOtp = otpDigits.join('');
+    if (fullOtp.length < 6) {
+      setError('Please enter all 6 digits of your verification code.');
+      return;
+    }
+
     setError('');
     setSuccessMsg('');
     setLoading(true);
@@ -211,7 +293,7 @@ function SignupContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           identifier: email.trim().toLowerCase(),
-          code: emailOtp.trim(),
+          code: fullOtp.trim(),
           purpose: 'registration'
         })
       });
@@ -219,7 +301,7 @@ function SignupContent() {
 
       if (!res.ok) throw new Error(data.error || 'Invalid verification code.');
 
-      setStep('completed');
+      setCurrentStep('completed');
       if (data.user) {
         setAuthSession(data.user, data.profile);
       }
@@ -236,7 +318,6 @@ function SignupContent() {
     }
   };
 
-  // Resend OTP
   const handleResendOtp = async () => {
     if (emailCooldown > 0) return;
     setError('');
@@ -259,370 +340,701 @@ function SignupContent() {
     }
   };
 
+  // Helper to add skill chips
+  const addSkillChip = (skillName: string) => {
+    const current = skillsInput.split(',').map((s) => s.trim()).filter(Boolean);
+    if (!current.includes(skillName)) {
+      setSkillsInput([...current, skillName].join(', '));
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary/20 selection:text-primary">
       
-      <div className="max-w-4xl mx-auto w-full space-y-8">
-        
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
-            <Skill2HireLogo variant="full" size="lg" />
+      {/* 🧭 Top Navigation Header */}
+      <header className="relative w-full border-b border-border/80 dark:border-white/10 bg-card/60 backdrop-blur-md px-4 sm:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Skill2HireLogo variant="full" size="sm" theme={resolvedTheme} />
           </Link>
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Create Your <span className="text-primary-600">Skill2Hire</span> Account
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-lg mx-auto">
-              Follow our secure 3-step verification process to access your dedicated role portal.
-            </p>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground hidden sm:flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Home</span>
+            </Link>
+
+            <Link
+              href="/login"
+              className="text-xs font-bold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Sign In
+            </Link>
+
+            {/* Quick Dark Mode / Light Mode Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle color theme"
+              className="p-2 rounded-xl border border-border dark:border-white/10 bg-card hover:bg-muted text-foreground transition-all duration-200"
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* 🌟 Main Content */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        
+        {/* Top Header & Progressive Category Stepper */}
+        <div className="max-w-2xl mx-auto text-center space-y-4 mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Fast 2-Step Registration</span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-display">
+            {currentStep === 'credentials' && 'Step 1: Role & Account Credentials'}
+            {currentStep === 'profile' && `Step 2: Complete Your ${selectedRole === 'student' ? 'Student' : selectedRole === 'college' ? 'Institution' : 'Company'} Profile`}
+            {currentStep === 'otp_email' && 'Step 3: Email OTP Verification'}
+            {currentStep === 'completed' && 'Registration Complete!'}
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {currentStep === 'credentials' && 'Choose your portal role and set your login email and password.'}
+            {currentStep === 'profile' && 'Add your background details so your dashboard and AI recommendations are customized.'}
+            {currentStep === 'otp_email' && `Enter the 6-digit verification code sent to ${maskedEmail || email}.`}
+          </p>
+
+          {/* Stepper Tabs with Categories */}
+          <div className="pt-2 flex items-center justify-center gap-2 text-xs font-bold">
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all ${
+              currentStep === 'credentials'
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-muted/50 text-muted-foreground border-border'
+            }`}>
+              <span className="w-4 h-4 rounded-full bg-black/20 flex items-center justify-center text-[10px]">1</span>
+              <span>Account Credentials</span>
+            </div>
+
+            <div className="w-4 h-0.5 bg-border" />
+
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all ${
+              currentStep === 'profile'
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-muted/50 text-muted-foreground border-border'
+            }`}>
+              <span className="w-4 h-4 rounded-full bg-black/20 flex items-center justify-center text-[10px]">2</span>
+              <span>Profile Details</span>
+            </div>
+
+            <div className="w-4 h-0.5 bg-border" />
+
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all ${
+              currentStep === 'otp_email' || currentStep === 'completed'
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-muted/50 text-muted-foreground border-border'
+            }`}>
+              <span className="w-4 h-4 rounded-full bg-black/20 flex items-center justify-center text-[10px]">3</span>
+              <span>Verification</span>
+            </div>
           </div>
         </div>
 
-        {/* Progress Tracker */}
-        <div className="max-w-md mx-auto flex items-center justify-between text-xs font-bold text-slate-400">
-          <div className={`flex items-center gap-1.5 ${step === 'form' ? 'text-primary-600' : 'text-emerald-600'}`}>
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black ${step === 'form' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'}`}>1</div>
-            <span>Profile Details</span>
-          </div>
-          <div className="h-0.5 w-12 bg-slate-200" />
-          <div className={`flex items-center gap-1.5 ${step === 'otp_email' ? 'text-primary-600' : step === 'completed' ? 'text-emerald-600' : ''}`}>
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black ${step === 'otp_email' ? 'bg-primary-600 text-white' : step === 'completed' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>2</div>
-            <span>Email OTP</span>
-          </div>
-          <div className="h-0.5 w-12 bg-slate-200" />
-          <div className={`flex items-center gap-1.5 ${step === 'completed' ? 'text-emerald-600' : ''}`}>
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black ${step === 'completed' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>3</div>
-            <span>Dashboard</span>
-          </div>
-        </div>
-
-        {/* Alert Feedback */}
+        {/* Global Feedback Messages */}
         {error && (
-          <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+          <div className="max-w-2xl mx-auto mb-6 p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+          <div className="max-w-2xl mx-auto mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-semibold flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
 
-        {/* Step 1: Role Selection & Profile Form */}
-        {step === 'form' && (
-          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl p-6 sm:p-10 space-y-8">
+        {/* ========================================================================= */}
+        {/* 📦 STEP 1: ROLE SELECTION & ACCOUNT CREDENTIALS (4 SIMPLE FIELDS)         */}
+        {/* ========================================================================= */}
+        {currentStep === 'credentials' && (
+          <div className="max-w-2xl mx-auto space-y-6">
             
-            {/* 1. Role Picker */}
-            <div className="space-y-3">
-              <label className="text-xs font-black uppercase tracking-wider text-slate-700 block">
-                Select User Role (Strict Permission Boundary)
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* CATEGORY 1: Choose Role (Compact Segmented Switcher) */}
+            <div className="bg-card text-card-foreground rounded-3xl border border-border dark:border-white/10 shadow-lg p-5 sm:p-6 space-y-3 backdrop-blur-xl">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[11px] font-black">1</span>
+                  <span>Select User Role</span>
+                </span>
+                <span className="text-[11px] text-muted-foreground font-medium">Controls permissions & portal</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { role: 'student' as UserRole, title: 'Student', icon: GraduationCap, desc: 'Learn, verify skills, view transcripts & apply to tech jobs' },
-                  { role: 'college' as UserRole, title: 'College / University', icon: Building2, desc: 'Placement cell, track student cohort readiness & analyze curriculum gaps' },
-                  { role: 'company' as UserRole, title: 'Company / Recruiter', icon: Briefcase, desc: 'Post opportunities, search verified talent & manage hiring pipeline' }
-                ].map((r) => {
-                  const Icon = r.icon;
-                  const isSelected = selectedRole === r.role;
+                  {
+                    role: 'student' as UserRole,
+                    title: 'Student',
+                    icon: GraduationCap,
+                    desc: 'Practice & get hired',
+                    activeStyle: 'border-primary ring-2 ring-primary/20 bg-primary/10 shadow-glow-cyan text-primary'
+                  },
+                  {
+                    role: 'college' as UserRole,
+                    title: 'College / University',
+                    icon: Building2,
+                    desc: 'TPO & Batch analytics',
+                    activeStyle: 'border-secondary ring-2 ring-secondary/20 bg-secondary/10 shadow-glow-violet text-secondary'
+                  },
+                  {
+                    role: 'company' as UserRole,
+                    title: 'Company / Recruiter',
+                    icon: Briefcase,
+                    desc: 'Post jobs & hire talent',
+                    activeStyle: 'border-fuchsia-500 ring-2 ring-fuchsia-500/20 bg-fuchsia-500/10 shadow-lg shadow-fuchsia-500/15 text-fuchsia-500'
+                  }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isSelected = selectedRole === item.role;
                   return (
                     <button
-                      key={r.role}
+                      key={item.role}
                       type="button"
-                      onClick={() => setSelectedRole(r.role)}
-                      className={`p-5 rounded-2xl border-2 text-left space-y-2 transition-all ${
+                      onClick={() => setSelectedRole(item.role)}
+                      className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${
                         isSelected
-                          ? 'border-primary-600 bg-primary-50/40 ring-2 ring-primary-500/20 shadow-md'
-                          : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+                          ? item.activeStyle
+                          : 'border-border/80 bg-muted/30 hover:bg-muted/60 text-muted-foreground'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className={`p-2.5 rounded-xl ${isSelected ? 'bg-primary-600 text-white' : 'bg-slate-200 text-slate-700'}`}>
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        {isSelected && <CheckCircle2 className="w-5 h-5 text-primary-600" />}
+                      <div className={`p-2 rounded-xl ${isSelected ? 'bg-background shadow-sm' : 'bg-muted'}`}>
+                        <Icon className="w-4 h-4" />
                       </div>
-                      <div className="font-black text-sm text-slate-900">{r.title}</div>
-                      <p className="text-[11px] text-slate-500 leading-snug">{r.desc}</p>
+                      <div className="min-w-0">
+                        <div className="font-extrabold text-xs text-foreground truncate">{item.title}</div>
+                        <div className="text-[10px] text-muted-foreground truncate">{item.desc}</div>
+                      </div>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* 2. Role Specific Form */}
-            <form onSubmit={handleInitiateRegistration} className="space-y-6">
+            {/* CATEGORY 2: Account Login Credentials */}
+            <form onSubmit={handleProceedToProfile} className="bg-card text-card-foreground rounded-3xl border border-border dark:border-white/10 shadow-lg p-6 sm:p-8 space-y-6 backdrop-blur-xl">
               
-              {/* Common Account Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <span className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[11px] font-black">2</span>
+                  <span>Login Credentials</span>
+                </span>
+                
+                {/* Fast track with Google */}
+                <button
+                  type="button"
+                  onClick={() => setGoogleModalOpen(true)}
+                  className="text-xs font-bold text-primary hover:underline flex items-center gap-1.5"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>Fast Fill with Google</span>
+                </button>
+              </div>
+
+              {/* Name & Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Full Name / Account Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Alex Rivera"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-primary-500 text-xs font-medium text-slate-900"
-                  />
+                  <label className="text-xs font-bold text-foreground">Full Name / Account Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Alex Rivera"
+                      className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-medium text-foreground transition-all"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Verified Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. yourname@gmail.com"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-primary-500 text-xs font-medium text-slate-900"
-                  />
+                  <label className="text-xs font-bold text-foreground">Verified Email Address</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="yourname@gmail.com"
+                      className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-medium text-foreground transition-all"
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Phone Number (Optional)</label>
+              {/* Password & Confirm */}
+              {!isGoogleVerified && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-foreground flex items-center justify-between">
+                        <span>Password</span>
+                        {password && (
+                          <span className="text-[10px] font-bold text-muted-foreground">
+                            {passwordStrength.label}
+                          </span>
+                        )}
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Min. 6 characters"
+                          className="w-full pl-11 pr-11 py-2.5 rounded-xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-medium text-foreground transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label="Toggle password visibility"
+                          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-foreground">Confirm Password</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Re-enter password"
+                          className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-medium text-foreground transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {password && (
+                    <div className="grid grid-cols-4 gap-1.5 pt-1">
+                      {[1, 2, 3, 4].map((s) => (
+                        <div
+                          key={s}
+                          className={`h-1 rounded-full transition-all duration-300 ${
+                            s <= passwordStrength.score ? passwordStrength.color : 'bg-muted'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Phone Optional */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground">Phone Number (Optional)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                    <Phone className="w-4 h-4" />
+                  </div>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+91 98765 00000"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-primary-500 text-xs font-medium text-slate-900"
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-medium text-foreground transition-all"
                   />
                 </div>
               </div>
 
-              {!isGoogleVerified && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700">Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Minimum 6 characters"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-primary-500 text-xs font-medium text-slate-900"
-                    />
-                  </div>
+              {/* Step 1 Action Button */}
+              <button
+                type="submit"
+                className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/25 hover-lift transition-all"
+              >
+                <span>Continue to Profile Details</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700">Confirm Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Re-enter password"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-primary-500 text-xs font-medium text-slate-900"
-                    />
-                  </div>
-                </div>
-              )}
+            </form>
 
-              {/* Student Role Form Fields */}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* 📋 STEP 2: CATEGORIZED ROLE PROFILE DETAILS                                */}
+        {/* ========================================================================= */}
+        {currentStep === 'profile' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            
+            <form onSubmit={handleFinalRegistration} className="bg-card text-card-foreground rounded-3xl border border-border dark:border-white/10 shadow-lg p-6 sm:p-8 space-y-6 backdrop-blur-xl">
+              
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep('credentials')}
+                  className="text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back to Credentials</span>
+                </button>
+
+                <span className="text-xs font-bold text-primary px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+                  {selectedRole === 'student' ? '🎓 Student Profile' : selectedRole === 'college' ? '🏛️ Institution Profile' : '🏢 Recruiter Profile'}
+                </span>
+              </div>
+
+              {/* 🎓 FOR STUDENTS: Categorized Sections */}
               {selectedRole === 'student' && (
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-primary-600 flex items-center gap-1.5">
-                    <GraduationCap className="w-4 h-4" />
-                    <span>Student Academic & Career Information</span>
-                  </h3>
+                <div className="space-y-6">
+                  
+                  {/* Category A: Academic Institution */}
+                  <div className="space-y-3 p-4 rounded-2xl bg-muted/20 border border-border/80">
+                    <span className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
+                      <GraduationCap className="w-4 h-4" />
+                      <span>Category A: Academic Details</span>
+                    </span>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">College / Institution</label>
-                      <input
-                        type="text"
-                        required
-                        value={collegeName}
-                        onChange={(e) => setCollegeName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <label className="text-xs font-bold text-foreground">College / University Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={collegeName}
+                          onChange={(e) => setCollegeName(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-foreground">Department / Major</label>
+                        <input
+                          type="text"
+                          required
+                          value={department}
+                          onChange={(e) => setDepartment(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-foreground">Graduation Year</label>
+                        <input
+                          type="number"
+                          required
+                          value={graduationYear}
+                          onChange={(e) => setGraduationYear(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
+                        />
+                      </div>
                     </div>
+                  </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Branch / Department</label>
-                      <input
-                        type="text"
-                        required
-                        value={department}
-                        onChange={(e) => setDepartment(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
-                      />
-                    </div>
+                  {/* Category B: Career & Skills */}
+                  <div className="space-y-3 p-4 rounded-2xl bg-muted/20 border border-border/80">
+                    <span className="text-xs font-black uppercase tracking-wider text-secondary flex items-center gap-1.5">
+                      <Code2 className="w-4 h-4" />
+                      <span>Category B: Skills & Career Goal</span>
+                    </span>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Graduation Year</label>
-                      <input
-                        type="number"
-                        required
-                        value={graduationYear}
-                        onChange={(e) => setGraduationYear(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
-                      />
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-foreground">Target Role / Career Goal</label>
+                        <input
+                          type="text"
+                          required
+                          value={careerGoal}
+                          onChange={(e) => setCareerGoal(e.target.value)}
+                          placeholder="e.g. Full Stack Software Engineer"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-foreground">Declared Skills (Comma separated)</label>
+                        <input
+                          type="text"
+                          value={skillsInput}
+                          onChange={(e) => setSkillsInput(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
+                        />
+                        
+                        {/* Quick Skill Tags */}
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <span className="text-[10px] text-muted-foreground font-semibold">Popular:</span>
+                          {['Python', 'React', 'DSA', 'SQL', 'TypeScript', 'AWS'].map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => addSkillChip(tag)}
+                              className="px-2 py-0.5 rounded-md bg-muted hover:bg-primary/20 hover:text-primary text-[10px] font-bold text-muted-foreground transition-colors"
+                            >
+                              + {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Declared Skills (Comma Separated)</label>
-                      <input
-                        type="text"
-                        value={skillsInput}
-                        onChange={(e) => setSkillsInput(e.target.value)}
-                        placeholder="e.g. Python, SQL, DSA, AWS"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Target Career Goal</label>
-                      <input
-                        type="text"
-                        value={careerGoal}
-                        onChange={(e) => setCareerGoal(e.target.value)}
-                        placeholder="e.g. Backend Software Engineer"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
-                      />
-                    </div>
-                  </div>
                 </div>
               )}
 
-              {/* College Role Form Fields */}
+              {/* 🏛️ FOR COLLEGES: Categorized Details */}
               {selectedRole === 'college' && (
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                <div className="space-y-4 p-4 rounded-2xl bg-muted/20 border border-border/80">
+                  <span className="text-xs font-black uppercase tracking-wider text-secondary flex items-center gap-1.5">
                     <Building2 className="w-4 h-4" />
                     <span>Institution Verification Details</span>
-                  </h3>
+                  </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Official Institutional Website</label>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold text-foreground">Official Campus Website</label>
                       <input
                         type="url"
                         required
                         value={website}
                         onChange={(e) => setWebsite(e.target.value)}
                         placeholder="https://university.edu"
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Placement Officer / Contact Person</label>
+                      <label className="text-xs font-bold text-foreground">Placement Cell Contact / Dean</label>
                       <input
                         type="text"
                         required
                         value={contactPerson}
                         onChange={(e) => setContactPerson(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-foreground">Campus Location / Address</label>
+                      <input
+                        type="text"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Company Role Form Fields */}
+              {/* 🏢 FOR RECRUITERS: Categorized Details */}
               {selectedRole === 'company' && (
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-cyan-600 flex items-center gap-1.5">
+                <div className="space-y-4 p-4 rounded-2xl bg-muted/20 border border-border/80">
+                  <span className="text-xs font-black uppercase tracking-wider text-fuchsia-500 flex items-center gap-1.5">
                     <Briefcase className="w-4 h-4" />
-                    <span>Company Verification Details</span>
-                  </h3>
+                    <span>Company & Recruiting Details</span>
+                  </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Industry / Domain</label>
+                      <label className="text-xs font-bold text-foreground">Industry / Sector</label>
                       <input
                         type="text"
                         required
                         value={industry}
                         onChange={(e) => setIndustry(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
+                        placeholder="e.g. Cloud & AI Infrastructure"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700">Recruiter / Talent Lead Name</label>
+                      <label className="text-xs font-bold text-foreground">Lead Recruiter / Hiring Lead</label>
                       <input
                         type="text"
                         required
                         value={recruiterName}
                         onChange={(e) => setRecruiterName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-muted/40 border border-input text-xs font-medium text-foreground"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Submit Button */}
+              {/* Submit to Send OTP */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-2xl bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary-600/25 transition-all hover:scale-[1.01]"
+                className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-primary/25 disabled:opacity-50 hover-lift transition-all"
               >
-                <span>{loading ? 'Processing Registration...' : 'Continue to Email OTP Verification'}</span>
+                <span>{loading ? 'Creating Account & Dispatching OTP...' : 'Submit & Receive Email OTP'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
             </form>
+
           </div>
         )}
 
-        {/* Step 2: Email OTP Input Screen */}
-        {step === 'otp_email' && (
-          <div className="max-w-md mx-auto bg-white rounded-3xl border border-slate-200/90 shadow-xl p-8 space-y-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center mx-auto shadow-inner">
-              <Mail className="w-7 h-7" />
+        {/* ========================================================================= */}
+        {/* 🔑 STEP 3: 6-DIGIT EMAIL OTP VERIFICATION SCREEN                           */}
+        {/* ========================================================================= */}
+        {currentStep === 'otp_email' && (
+          <div className="max-w-md mx-auto space-y-6">
+            
+            {/* Live simulated OTP notification for 1-click test auto-fill */}
+            <LiveOtpNotificationBanner
+              filterDestination={email}
+              onSelectOtp={(code) => {
+                const chars = code.split('').slice(0, 6);
+                const newDigits = [...otpDigits];
+                chars.forEach((c, i) => {
+                  newDigits[i] = c;
+                });
+                setOtpDigits(newDigits);
+              }}
+            />
+
+            <div className="bg-card text-card-foreground rounded-3xl border border-border dark:border-white/10 shadow-xl p-8 space-y-6 text-center backdrop-blur-xl">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-inner">
+                <Mail className="w-7 h-7" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h2 className="text-xl font-black text-foreground">Verify Your Email Address</h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  We sent a 6-digit verification code to <strong className="text-foreground">{maskedEmail || email}</strong>.
+                </p>
+              </div>
+
+              {/* 6 Monospace OTP Input Boxes */}
+              <form onSubmit={handleVerifyEmailOtp} className="space-y-6">
+                <div className="flex items-center justify-center gap-2.5">
+                  {otpDigits.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => {
+                        otpInputRefs.current[idx] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpBoxChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      onPaste={handleOtpPaste}
+                      className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-black font-mono rounded-2xl border border-input bg-muted/40 focus:bg-card focus:border-primary focus:ring-2 focus:ring-primary/20 text-foreground transition-all"
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || otpDigits.join('').length < 6}
+                  className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all hover-lift"
+                >
+                  <span>{loading ? 'Verifying Code...' : 'Verify OTP & Activate Portal'}</span>
+                  <CheckCircle2 className="w-4 h-4" />
+                </button>
+              </form>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={emailCooldown > 0}
+                  className="font-bold text-primary hover:underline disabled:opacity-50"
+                >
+                  {emailCooldown > 0 ? `Resend Code in ${emailCooldown}s` : 'Resend Verification Code'}
+                </button>
+
+                <span className="text-muted-foreground hidden sm:inline">•</span>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep('credentials')}
+                  className="text-muted-foreground hover:text-foreground font-semibold"
+                >
+                  Edit Account Details
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <h2 className="text-xl font-black text-slate-900">Enter 6-Digit Email OTP</h2>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                We've sent a verification code to your email <strong className="text-slate-800">{maskedEmail}</strong>. Please check your Gmail inbox (and spam folder). Valid for 5 minutes.
-              </p>
-            </div>
-
-            <form onSubmit={handleVerifyEmailOtp} className="space-y-4">
-              <input
-                type="text"
-                required
-                maxLength={6}
-                value={emailOtp}
-                onChange={(e) => setEmailOtp(e.target.value)}
-                placeholder="••••••"
-                className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-primary-500 text-center font-mono font-black text-2xl tracking-[0.5em] text-slate-900"
-              />
-
-              <button
-                type="submit"
-                disabled={loading || emailOtp.length < 6}
-                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition-all"
-              >
-                <span>{loading ? 'Verifying Code...' : 'Verify OTP & Activate Portal'}</span>
-                <CheckCircle2 className="w-4 h-4" />
-              </button>
-            </form>
-
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={emailCooldown > 0}
-                className="text-xs font-bold text-primary-600 hover:underline disabled:opacity-50"
-              >
-                {emailCooldown > 0 ? `Resend Code in ${emailCooldown}s` : 'Resend Verification Code'}
-              </button>
-            </div>
           </div>
         )}
 
-      </div>
+        {/* ========================================================================= */}
+        {/* 🎉 STEP 4: REGISTRATION COMPLETED                                          */}
+        {/* ========================================================================= */}
+        {currentStep === 'completed' && (
+          <div className="max-w-md mx-auto bg-card text-card-foreground rounded-3xl border border-border dark:border-white/10 shadow-xl p-10 space-y-4 text-center backdrop-blur-xl">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-foreground">Welcome to Skill2Hire!</h2>
+            <p className="text-xs text-muted-foreground">
+              Your account has been verified. Redirecting you to your dedicated dashboard...
+            </p>
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mt-4" />
+          </div>
+        )}
+
+      </main>
+
+      {/* 🔻 Public Auth Footer */}
+      <footer className="w-full border-t border-border/80 dark:border-white/10 py-6 px-4 text-center text-xs text-muted-foreground">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>&copy; 2026 Skill2Job.ai — Next-Gen AI Career & Recruitment Platform.</div>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+            <Link href="/login" className="hover:text-foreground transition-colors">Sign In</Link>
+            <span className="hover:text-foreground transition-colors cursor-pointer">Security Audit</span>
+          </div>
+        </div>
+      </footer>
+
+      {/* Google Sign In Modal */}
+      <GoogleSignInModal
+        isOpen={googleModalOpen}
+        onClose={() => setGoogleModalOpen(false)}
+        onSelectAccount={(googleEmail, googleName) => {
+          setEmail(googleEmail);
+          setName(googleName);
+          setIsGoogleVerified(true);
+          setGoogleModalOpen(false);
+          setSuccessMsg(`Google identity verified for ${googleEmail}. Proceed to Step 2.`);
+        }}
+      />
+
     </div>
   );
 }

@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
 const GoogleSignInModal = dynamic(() => import('@/components/GoogleSignInModal'), { ssr: false });
 const LiveOtpNotificationBanner = dynamic(() => import('@/components/LiveOtpNotificationBanner'), { ssr: false });
@@ -12,28 +13,26 @@ import {
   ShieldCheck,
   Lock,
   Mail,
-  Phone,
   ArrowRight,
   Sparkles,
-  Users,
   GraduationCap,
   Building2,
   CheckCircle2,
   AlertCircle,
   KeyRound,
-  Send,
   Eye,
   EyeOff,
   Briefcase,
-  Layers,
-  Copy,
-  Check
+  Sun,
+  Moon,
+  ArrowLeft
 } from 'lucide-react';
 import { UserRole } from '@/lib/types';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, loginWithPhone, loginWithGoogle, switchPersona, isLoading } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   // Google Modal State
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
@@ -49,58 +48,54 @@ export default function LoginPage() {
   // OTP Login Mode
   const [useOtp, setUseOtp] = useState(false);
   const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
   const [otpCooldown, setOtpCooldown] = useState(0);
 
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // 3 Role Cards
+  // 3 Role Cards with Pre-configured Demo Accounts
   const THREE_ROLE_CREDENTIALS = [
     {
       role: 'student' as UserRole,
-      userId: 'u_student_1',
       title: 'Student Portal',
-      name: 'Alex Rivera',
-      subtitle: 'Candidate & Skill Learner',
+      subtitle: 'Candidate & Learner',
       email: 'alex.rivera@student.skill2hire.com',
       password: 'demo123',
       icon: GraduationCap,
-      color: 'from-blue-600 to-indigo-600',
-      badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
-      description: 'Access student dashboard, skill passport, courses, assessments & job applications.'
+      color: 'from-cyan-500 to-blue-600',
+      badgeColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+      description: 'Practice coding in IDE, take AI assessments, boost readiness gauge & apply to verified tech openings.',
+      defaultDestination: '/student/dashboard'
     },
     {
       role: 'college' as UserRole,
-      userId: 'u_col_1',
       title: 'College Portal',
-      name: 'Apex University',
-      subtitle: 'Placement & Training Cell',
-      email: 'admin@apexuniversity.edu',
+      subtitle: 'TPO & Academic Leadership',
+      email: 'tpo@apexuniversity.edu',
       password: 'demo123',
       icon: Building2,
-      color: 'from-purple-600 to-indigo-600',
-      badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
-      description: 'Access institutional cohort analytics, skill heatmaps, bootcamps & campus placement drives.'
+      color: 'from-violet-500 to-indigo-600',
+      badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+      description: 'Track student batch placement readiness, curriculum demand gaps & monitor company recruiting visits.',
+      defaultDestination: '/college/dashboard'
     },
     {
       role: 'company' as UserRole,
-      userId: 'u_comp_1',
-      title: 'Company Portal',
-      name: 'TechNova HR',
-      subtitle: 'Job Posting & Hiring Lead',
+      title: 'Recruiter Hub',
+      subtitle: 'Enterprise Talent Lead',
       email: 'recruiter@technova.com',
       password: 'demo123',
       icon: Briefcase,
-      color: 'from-cyan-600 to-blue-600',
-      badgeColor: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-      description: 'Post technical opportunities, filter verified candidates, review applications & manage pipelines.'
+      color: 'from-fuchsia-500 to-pink-600',
+      badgeColor: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
+      description: 'Search verified candidate skills, view live code test scores & manage multi-stage hiring pipelines.',
+      defaultDestination: '/recruiter/dashboard'
     }
   ];
 
-  const getDashboardRoute = (role: UserRole) => {
-    switch (role) {
+  const getDashboardRoute = (targetRole: UserRole) => {
+    switch (targetRole) {
       case 'student': return '/student/dashboard';
       case 'college': return '/college/dashboard';
       case 'company': return '/recruiter/dashboard';
@@ -109,98 +104,102 @@ export default function LoginPage() {
     }
   };
 
-  const handleSelectRoleCredentials = (roleConfig: typeof THREE_ROLE_CREDENTIALS[0]) => {
-    setSelectedRole(roleConfig.role);
-    setIdentifier(roleConfig.email);
-    setPassword(roleConfig.password);
+  const handleSelectRoleCredentials = (cred: typeof THREE_ROLE_CREDENTIALS[0]) => {
+    setSelectedRole(cred.role);
+    setIdentifier(cred.email);
+    setPassword(cred.password);
     setError('');
-    setSuccessMsg(`Selected ${roleConfig.title} credentials (${roleConfig.name})`);
+    setSuccessMsg(`Credentials for ${cred.title} loaded into form below.`);
   };
 
-  const handleQuickInstantLogin = async (roleConfig: typeof THREE_ROLE_CREDENTIALS[0]) => {
-    setError('');
-    setSubmitting(true);
-    try {
-      await switchPersona(roleConfig.role, roleConfig.userId);
-      router.push(getDashboardRoute(roleConfig.role));
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-      setSubmitting(false);
-    }
-  };
-
-  // Google OAuth Flow
-  const handleGoogleAuth = () => {
-    setError('');
-    setSuccessMsg('');
-    setGoogleModalOpen(true);
-  };
-
-  const handleGoogleSelectAccount = async (email: string, name: string) => {
-    setGoogleModalOpen(false);
+  const handleQuickInstantLogin = async (cred: typeof THREE_ROLE_CREDENTIALS[0]) => {
     setError('');
     setSuccessMsg('');
     setSubmitting(true);
+    setSelectedRole(cred.role);
+    setIdentifier(cred.email);
+    setPassword(cred.password);
+
     try {
-      const result = await loginWithGoogle(email);
-      if (result.isNewUser) {
-        setSuccessMsg(`Google identity verified for ${email}! Redirecting to select role...`);
-        setTimeout(() => {
-          router.push(`/signup?email=${encodeURIComponent(result.email || email)}&name=${encodeURIComponent(result.name || name)}`);
-        }, 800);
-      } else if (result.success) {
-        setSuccessMsg(`Authenticated as ${email}`);
-        const userRole = (result as any).user?.role || THREE_ROLE_CREDENTIALS.find(c => c.email === email)?.role || 'student';
-        router.push(getDashboardRoute(userRole));
+      const res = await login(cred.email, cred.password, false);
+      if (res.success) {
+        router.push(cred.defaultDestination);
       } else {
-        setError(result.error || 'Google authentication failed.');
+        setError(res.error || 'Authentication failed.');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to authenticate with Google.');
+      setError(err.message || 'Error executing quick login.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Send Email OTP for Login
+  const handleGoogleAuth = () => {
+    setGoogleModalOpen(true);
+  };
+
+  const handleGoogleSelectAccount = async (googleEmail: string, googleName: string) => {
+    setGoogleModalOpen(false);
+    setError('');
+    setSuccessMsg('');
+    setSubmitting(true);
+
+    try {
+      const res = await loginWithGoogle(googleEmail);
+      if (res.success) {
+        const targetRoute = getDashboardRoute((res as any).user?.role || selectedRole);
+        router.push(targetRoute);
+      } else if (res.isNewUser) {
+        router.push(`/signup?email=${encodeURIComponent(res.email || googleEmail)}&name=${encodeURIComponent(res.name || googleName)}`);
+      } else {
+        setError(res.error || 'Google login failed.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to authenticate Google identity.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const startOtpCooldown = () => {
+    setOtpCooldown(60);
+    const interval = setInterval(() => {
+      setOtpCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   const handleSendOtp = async () => {
-    if (!identifier) {
-      setError('Please enter your email or phone number to receive a verification code.');
+    if (!identifier.trim()) {
+      setError('Please provide your email address to receive an OTP.');
       return;
     }
     setError('');
-    setSubmitting(true);
+    setSuccessMsg('');
     try {
       const res = await fetch('/api/auth/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: identifier.trim(),
+          identifier: identifier.trim().toLowerCase(),
+          type: 'email',
           purpose: 'login'
         })
       });
       const data = await res.json();
-      if (res.ok) {
-        setOtpSent(true);
-        setSuccessMsg(data.message || 'A 6-digit verification code has been dispatched.');
-        setOtpCooldown(60);
-        const timer = setInterval(() => {
-          setOtpCooldown((prev) => {
-            if (prev <= 1) { clearInterval(timer); return 0; }
-            return prev - 1;
-          });
-        }, 1000);
-      } else {
-        setError(data.error || 'Failed to send verification code.');
-      }
+      if (!res.ok) throw new Error(data.error || 'Failed to send OTP code.');
+      startOtpCooldown();
+      setSuccessMsg(data.message || 'OTP dispatched to your registered email.');
     } catch (err: any) {
-      setError(err.message || 'Failed to request verification code.');
-    } finally {
-      setSubmitting(false);
+      setError(err.message || 'Failed to send verification code.');
     }
   };
 
-  // Submit Direct Login Form
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -210,7 +209,6 @@ export default function LoginPage() {
     try {
       const res = await login(identifier.trim(), useOtp ? otp.trim() : password, useOtp);
       if (res.success) {
-        // Redirect dynamically according to actual authenticated user role
         const targetRole = (res as any).user?.role || THREE_ROLE_CREDENTIALS.find(c => c.email === identifier.trim())?.role || selectedRole;
         router.push(getDashboardRoute(targetRole));
       } else {
@@ -224,38 +222,71 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary/20 selection:text-primary">
       
-      <div className="max-w-6xl mx-auto w-full space-y-8">
-        
-        {/* Brand Header */}
-        <div className="text-center space-y-3">
-          <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
-            <Skill2HireLogo variant="full" size="lg" />
+      {/* 🧭 Top Navigation Header */}
+      <header className="w-full border-b border-border/80 dark:border-white/10 glass sticky top-0 z-40 px-4 sm:px-8 py-3.5">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Skill2HireLogo variant="full" size="sm" theme={resolvedTheme} />
           </Link>
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Sign In to Your <span className="text-primary-600">Skill2Hire</span> Portal
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-lg mx-auto">
-              Secure role-based authentication for Students, Colleges, and Enterprise Recruiters.
-            </p>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground hidden sm:flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Home</span>
+            </Link>
+
+            <Link
+              href="/signup"
+              className="text-xs font-bold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Register
+            </Link>
+
+            {/* Quick Dark Mode / Light Mode Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle color theme"
+              className="p-2 rounded-xl border border-border dark:border-white/10 bg-card hover:bg-muted text-foreground transition-all duration-200"
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-700" />
+              )}
+            </button>
           </div>
         </div>
+      </header>
 
-        {/* ========================================================================= */}
-        {/* 🌟 1. THREE ROLE SELECTOR CARDS (STUDENT, COLLEGE, COMPANY)               */}
-        {/* ========================================================================= */}
+      {/* 🌟 Content Container */}
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+        
+        {/* Title */}
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground font-display">
+            Sign In to Your <span className="text-gradient-brand">Skill2Hire</span> Portal
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium max-w-lg mx-auto">
+            Secure role-based authentication for Students, Colleges, and Enterprise Recruiters.
+          </p>
+        </div>
+
+        {/* 1. Quick Role Persona Selection */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-primary-600" />
-              <span>Select Your Portal Role</span>
+            <h2 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5 text-primary" />
+              <span>Select Your Portal Role (Instant Demo Access)</span>
             </h2>
-            <span className="text-[11px] text-slate-400 font-medium">Click any role to load demo credentials</span>
+            <span className="text-[11px] text-muted-foreground font-medium">Click 1-Click Login to enter immediately</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {THREE_ROLE_CREDENTIALS.map((cred) => {
               const Icon = cred.icon;
               const isSelected = selectedRole === cred.role && identifier === cred.email;
@@ -263,21 +294,21 @@ export default function LoginPage() {
               return (
                 <div
                   key={cred.role}
-                  className={`rounded-3xl bg-white border-2 p-5 flex flex-col justify-between space-y-4 shadow-sm transition-all relative overflow-hidden ${
+                  className={`rounded-3xl bg-card border p-5 flex flex-col justify-between space-y-4 shadow-subtle transition-all relative overflow-hidden backdrop-blur-md ${
                     isSelected
-                      ? 'border-primary-500 ring-2 ring-primary-500/20 shadow-md'
-                      : 'border-slate-200/90 hover:border-slate-300 hover:shadow'
+                      ? 'border-primary ring-2 ring-primary/20 shadow-glow-cyan'
+                      : 'border-border/80 dark:border-white/10 hover:border-primary/40'
                   }`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${cred.color} text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0`}>
-                          <Icon className="w-6 h-6" />
+                        <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${cred.color} text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0`}>
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div>
-                          <div className="font-black text-base text-slate-900">{cred.title}</div>
-                          <div className="text-[11px] text-slate-500 font-semibold">{cred.subtitle}</div>
+                          <div className="font-extrabold text-sm text-foreground">{cred.title}</div>
+                          <div className="text-[11px] text-muted-foreground font-semibold">{cred.subtitle}</div>
                         </div>
                       </div>
 
@@ -286,13 +317,13 @@ export default function LoginPage() {
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       {cred.description}
                     </p>
 
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1 font-mono text-[11px]">
-                      <div className="text-slate-500">Email: <span className="text-slate-900 font-bold">{cred.email}</span></div>
-                      <div className="text-slate-500">Password: <span className="text-slate-900 font-bold">{cred.password}</span></div>
+                    <div className="p-3 bg-muted/40 rounded-xl border border-border/60 space-y-0.5 font-mono text-[11px]">
+                      <div className="text-muted-foreground">Email: <span className="text-foreground font-bold">{cred.email}</span></div>
+                      <div className="text-muted-foreground">Password: <span className="text-foreground font-bold">{cred.password}</span></div>
                     </div>
                   </div>
 
@@ -300,17 +331,17 @@ export default function LoginPage() {
                     <button
                       onClick={() => handleQuickInstantLogin(cred)}
                       disabled={submitting}
-                      className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-primary-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                      className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-primary/20 hover-lift"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <Sparkles className="w-3.5 h-3.5" />
                       <span>⚡ 1-Click Login as {cred.title.replace(' Portal', '')}</span>
                     </button>
 
                     <button
                       onClick={() => handleSelectRoleCredentials(cred)}
-                      className="w-full py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] text-center transition-colors"
+                      className="w-full py-1.5 px-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground font-bold text-[11px] text-center transition-colors"
                     >
-                      Fill into Form Below ↓
+                      Fill Credentials Below ↓
                     </button>
                   </div>
                 </div>
@@ -319,10 +350,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* 🔐 2. MAIN LOGIN FORM & GOOGLE OAUTH CONTAINER                              */}
-        {/* ========================================================================= */}
-        <div className="max-w-xl mx-auto w-full bg-white rounded-3xl border border-slate-200/90 shadow-xl p-6 sm:p-8 space-y-6">
+        {/* 2. Main Login Form & Credentials Container */}
+        <div className="max-w-xl mx-auto w-full bg-card text-card-foreground rounded-3xl border border-border dark:border-white/10 shadow-xl p-6 sm:p-8 space-y-6 backdrop-blur-xl">
           
           {/* Primary: Continue with Google Button */}
           <div className="space-y-3">
@@ -330,7 +359,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGoogleAuth}
               disabled={submitting}
-              className="w-full py-3.5 px-4 rounded-2xl bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-3 shadow-sm transition-all hover:scale-[1.005]"
+              className="w-full py-3.5 px-4 rounded-2xl border border-border dark:border-white/10 bg-card hover:bg-muted text-foreground font-bold text-xs sm:text-sm flex items-center justify-center gap-3 shadow-subtle hover-lift transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -338,28 +367,28 @@ export default function LoginPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
               </svg>
-              <span>{submitting ? 'Verifying Google Identity...' : 'Continue with Google'}</span>
+              <span>{submitting ? 'Authenticating with Google...' : 'Continue with Google'}</span>
             </button>
 
             <div className="relative flex items-center justify-center pt-2 pb-1">
-              <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
-                Or Sign In with Email & Password
+              <div className="border-t border-border w-full" />
+              <span className="bg-card px-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">
+                Or Sign In with Email
               </span>
-              <div className="border-t border-slate-200 w-full" />
+              <div className="border-t border-border w-full" />
             </div>
           </div>
 
           {/* Feedback Messages */}
           {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{successMsg}</span>
             </div>
@@ -370,11 +399,11 @@ export default function LoginPage() {
             
             {/* Email / Identifier */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
-                <span>Email Address or Registered Identifier</span>
+              <label className="text-xs font-bold text-foreground">
+                Email Address or Registered Identifier
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -383,18 +412,18 @@ export default function LoginPage() {
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="Enter email address"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-medium text-slate-900"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-medium text-foreground transition-all"
                 />
               </div>
             </div>
 
             {/* Password or OTP Toggle */}
             <div className="flex items-center justify-between text-xs pt-1">
-              <span className="font-bold text-slate-700">{useOtp ? '6-Digit Email OTP' : 'Password'}</span>
+              <span className="font-bold text-foreground">{useOtp ? '6-Digit Email OTP' : 'Password'}</span>
               <button
                 type="button"
                 onClick={() => { setUseOtp(!useOtp); setError(''); setSuccessMsg(''); }}
-                className="text-primary-600 font-bold hover:underline"
+                className="text-primary font-bold hover:underline"
               >
                 {useOtp ? 'Switch to Password Login' : 'Login with Email OTP instead'}
               </button>
@@ -404,7 +433,7 @@ export default function LoginPage() {
             {!useOtp && (
               <div className="space-y-1.5">
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
                     <Lock className="w-4 h-4" />
                   </div>
                   <input
@@ -413,18 +442,20 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password (default: demo123)"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-medium text-slate-900"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-medium text-foreground transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                    aria-label="Toggle password visibility"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
             )}
+
             {/* OTP Input with Send Code Button */}
             {useOtp && (
               <div className="space-y-3">
@@ -435,13 +466,13 @@ export default function LoginPage() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     placeholder="6-digit OTP code"
-                    className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-xs font-mono font-bold tracking-widest text-slate-900 text-center"
+                    className="flex-1 px-4 py-3 rounded-2xl bg-muted/40 border border-input focus:bg-card focus:ring-2 focus:ring-primary focus:border-primary text-xs font-mono font-bold tracking-widest text-foreground text-center transition-all"
                   />
                   <button
                     type="button"
                     onClick={handleSendOtp}
                     disabled={otpCooldown > 0 || submitting}
-                    className="px-4 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold text-xs shrink-0 transition-colors"
+                    className="px-4 py-3 rounded-2xl bg-muted hover:bg-muted/80 text-foreground font-bold text-xs shrink-0 transition-colors border border-border"
                   >
                     {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : 'Send OTP Code'}
                   </button>
@@ -453,7 +484,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary-600/25 transition-all hover:scale-[1.01]"
+              className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-50 hover-lift transition-all"
             >
               <span>{submitting ? 'Verifying...' : 'Sign In to Dashboard'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -461,10 +492,10 @@ export default function LoginPage() {
           </form>
 
           {/* New to Skill2Hire */}
-          <div className="text-center pt-2 border-t border-slate-100 space-y-2">
-            <p className="text-xs text-slate-500">
+          <div className="text-center pt-2 border-t border-border space-y-2">
+            <p className="text-xs text-muted-foreground">
               Don't have an account yet?{' '}
-              <Link href="/signup" className="font-bold text-primary-600 hover:underline">
+              <Link href="/signup" className="font-bold text-primary hover:underline">
                 Create Account (Student, College, Company)
               </Link>
             </p>
@@ -472,7 +503,19 @@ export default function LoginPage() {
 
         </div>
 
-      </div>
+      </main>
+
+      {/* 🔻 Public Auth Footer */}
+      <footer className="w-full border-t border-border/80 dark:border-white/10 py-6 px-4 text-center text-xs text-muted-foreground">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>&copy; 2026 Skill2Job.ai — Next-Gen AI Career & Recruitment Platform.</div>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+            <Link href="/signup" className="hover:text-foreground transition-colors">Register</Link>
+            <span className="hover:text-foreground transition-colors cursor-pointer">Security Audit</span>
+          </div>
+        </div>
+      </footer>
 
       {/* Google Sign-In Account Selector Modal */}
       <GoogleSignInModal
