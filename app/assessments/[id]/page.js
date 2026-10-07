@@ -329,9 +329,9 @@ export default function AssessmentTestPage({ params }) {
       </div>);
     }
     if (!assessment || questions.length === 0) {
-        return (<div className="min-h-screen bg-slate-50 py-16 text-center">
-        <p className="text-base font-bold text-slate-800">Assessment not found</p>
-        <Link href="/courses" className="text-xs font-bold text-primary-600 mt-2 inline-block">← Back to Courses</Link>
+        return (<div className="w-full min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-16 space-y-4">
+        <p className="text-xl font-black text-white">Assessment not found</p>
+        <Link href="/courses" className="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-bold text-xs inline-block transition-colors shadow-md">← Back to Courses</Link>
       </div>);
     }
     const currentQ = questions[currentQuestionIndex];
@@ -384,7 +384,7 @@ export default function AssessmentTestPage({ params }) {
 
               <p className="text-xs text-slate-400">
                 {results.passed
-                ? `Congratulations! You verified ${assessment.skillName} at the ${results.awardedLevel} level. Your Skill Passport and Job Match score have been updated!`
+                ? `Congratulations! You verified ${assessment.skillName || assessment.title || 'Skill'} at the ${results.awardedLevel} level. Your Skill Passport and Job Match score have been updated!`
                 : `You scored below the ${assessment.passingScore}% passing threshold. Review the questions and retry to get verified.`}
               </p>
 
@@ -394,7 +394,7 @@ export default function AssessmentTestPage({ params }) {
                     <span className="font-mono text-[10px] text-emerald-400">{results.certificate.certificateNumber}</span>
                   </div>
                   <p className="text-xs text-slate-300">
-                    Badge: <strong>{assessment.skillName} — {results.awardedLevel} — Verified ✓</strong>
+                    Badge: <strong>{assessment.skillName || assessment.title || 'Skill'} — {results.awardedLevel} — Verified ✓</strong>
                   </p>
                 </div>)}
 
