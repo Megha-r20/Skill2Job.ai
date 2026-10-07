@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+
 export function Skill2HireSymbol({ size = 'md', role, className = '' }) {
     const sizeMap = {
         xs: 'w-6 h-6 rounded-md',
@@ -10,10 +11,13 @@ export function Skill2HireSymbol({ size = 'md', role, className = '' }) {
         '2xl': 'w-32 h-32 rounded-3xl',
         hero: 'w-48 h-48 sm:w-60 sm:h-60 rounded-[36px]'
     };
-    return (<div className={`relative inline-flex items-center justify-center shrink-0 overflow-hidden shadow-md ${sizeMap[size]} ${className}`}>
-      <img src="/logo-app-icon.png" alt="Skill2Hire Official App Icon" className="w-full h-full object-cover"/>
-    </div>);
+    return (
+        <div className={`relative inline-flex items-center justify-center shrink-0 overflow-hidden shadow-md ${sizeMap[size]} ${className}`}>
+            <img src="/logo-app-icon.png" alt="Skill2Hire Official App Icon" className="w-full h-full object-cover" />
+        </div>
+    );
 }
+
 export default function Skill2HireLogo({ variant = 'full', theme = 'light', size = 'md', role, showTagline = true, className = '' }) {
     const isDark = theme === 'dark' || theme === 'white';
     // Sizing maps
@@ -36,66 +40,78 @@ export default function Skill2HireLogo({ variant = 'full', theme = 'light', size
         hero: { text: 'text-6xl sm:text-7xl', num: 'text-7xl', tag: 'text-base' }
     };
     const currentText = textStyleMap[size] || textStyleMap.md;
+
     // Role Badge configuration
     const roleBadgeConfig = {
         student: {
             label: '🎓 Student Portal',
-            classes: 'bg-blue-50 text-blue-700 border-blue-200'
+            classes: 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
         },
         college: {
             label: '🏛️ College Portal',
-            classes: 'bg-purple-50 text-purple-700 border-purple-200'
+            classes: 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
         },
         company: {
             label: '🏢 Recruiter Hub',
-            classes: 'bg-cyan-50 text-cyan-700 border-cyan-200'
+            classes: 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800'
         },
         admin: {
             label: '⚙️ SuperAdmin',
-            classes: 'bg-amber-50 text-amber-800 border-amber-200'
+            classes: 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
         }
     };
+
     // Standalone Icon
     if (variant === 'icon' || variant === 'badge') {
-        return <Skill2HireSymbol size={size} role={role} className={className}/>;
+        return <Skill2HireSymbol size={size} role={role} className={className} />;
     }
+
     // Hero Stacked View
     if (variant === 'hero' || (variant === 'full' && size === 'hero')) {
-        return (<div className={`inline-flex flex-col items-center justify-center text-center space-y-3 ${className}`}>
-        <div className={`overflow-hidden shadow-2xl ${iconSizeMap[size]}`}>
-          <img src="/logo-app-icon.png" alt="Skill2Hire Hero Mark" className="w-full h-full object-cover"/>
-        </div>
-      </div>);
+        return (
+            <div className={`inline-flex flex-col items-center justify-center text-center space-y-3 ${className}`}>
+                <div className={`overflow-hidden shadow-2xl ${iconSizeMap[size]}`}>
+                    <img src="/logo-app-icon.png" alt="Skill2Hire Hero Mark" className="w-full h-full object-cover" />
+                </div>
+            </div>
+        );
     }
+
     // Horizontal Full Lockup
-    return (<div className={`inline-flex items-center gap-2.5 sm:gap-3 select-none ${className}`}>
-      {/* Exact Squircle Icon */}
-      <div className={`shrink-0 overflow-hidden shadow-md ${iconSizeMap[size]}`}>
-        <img src="/logo-app-icon.png" alt="Skill2Hire Icon" className="w-full h-full object-cover"/>
-      </div>
+    return (
+        <div className={`inline-flex items-center gap-2.5 sm:gap-3 select-none ${className}`}>
+            {/* Exact Squircle Icon */}
+            <div className={`shrink-0 overflow-hidden shadow-md ${iconSizeMap[size]}`}>
+                <img src="/logo-app-icon.png" alt="Skill2Hire Icon" className="w-full h-full object-cover" />
+            </div>
 
-      {/* Wordmark + Dynamic Role Sub-label */}
-      <div className="flex flex-col justify-center leading-none">
-        <div className="flex items-center tracking-tight font-sans font-black">
-          <span className={`${currentText.text} font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Skill
-          </span>
-          <span className={`${currentText.num} font-black bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent mx-0.5 transform -rotate-2`}>
-            2
-          </span>
-          <span className={`${currentText.text} font-black ${isDark ? 'text-cyan-300' : 'text-primary-600'}`}>
-            Hire
-          </span>
+            {/* Wordmark + Dynamic Role Sub-label */}
+            <div className="flex flex-col justify-center leading-none">
+                <div className="flex items-center tracking-tight font-sans font-black">
+                    <span className={`${currentText.text} font-black ${isDark ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                        Skill
+                    </span>
+                    <span className={`${currentText.num} font-black bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent mx-0.5 transform -rotate-2`}>
+                        2
+                    </span>
+                    <span className={`${currentText.text} font-black ${isDark ? 'text-cyan-300' : 'text-primary-600 dark:text-cyan-400'}`}>
+                        Hire
+                    </span>
+                </div>
+
+                {/* Role Edition Pill or Tagline */}
+                {role && roleBadgeConfig[role] ? (
+                    <div className="mt-1">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${roleBadgeConfig[role].classes}`}>
+                            {roleBadgeConfig[role].label}
+                        </span>
+                    </div>
+                ) : showTagline ? (
+                    <span className={`${currentText.tag} font-extrabold tracking-widest uppercase mt-1 ${isDark ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                        Learn. Verify. Get Hired.
+                    </span>
+                ) : null}
+            </div>
         </div>
-
-        {/* Role Edition Pill or Tagline */}
-        {role && roleBadgeConfig[role] ? (<div className="mt-1">
-            <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${roleBadgeConfig[role].classes}`}>
-              {roleBadgeConfig[role].label}
-            </span>
-          </div>) : showTagline ? (<span className={`${currentText.tag} font-extrabold tracking-widest uppercase mt-1 ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
-            Learn. Verify. Get Hired.
-          </span>) : null}
-      </div>
-    </div>);
+    );
 }
