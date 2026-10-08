@@ -82,7 +82,6 @@ export default function AssessmentTestPage({ params }) {
         async function loadModelsAndStartCamera() {
             try {
                 setIsFaceApiLoading(true);
-                // @ts-ignore
                 const faceapi = window.faceapi;
                 // Load model weights locally from the public folder
                 await faceapi.nets.tinyFaceDetector.loadFromUri('/models/');
@@ -153,7 +152,6 @@ export default function AssessmentTestPage({ params }) {
             });
         };
         async function detectionLoop() {
-            // @ts-ignore
             const faceapi = window.faceapi;
             if (!faceapi || !videoRef.current || !active || showWarningModal || proctoringCooldown) {
                 if (active)

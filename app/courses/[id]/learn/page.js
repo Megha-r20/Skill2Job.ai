@@ -96,7 +96,6 @@ export default function CoursePlayerPage() {
         async function preloadModels() {
             try {
                 setIsFaceApiLoading(true);
-                // @ts-ignore
                 const faceapi = window.faceapi;
                 await faceapi.nets.tinyFaceDetector.loadFromUri('/models/');
                 await faceapi.nets.faceLandmark68Net.loadFromUri('/models/');
@@ -166,7 +165,6 @@ export default function CoursePlayerPage() {
             });
         };
         async function detectionLoop() {
-            // @ts-ignore
             const faceapi = window.faceapi;
             if (!faceapi || !videoRef.current || !active || showWarningModal || proctoringCooldown) {
                 if (active)
