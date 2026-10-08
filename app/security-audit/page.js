@@ -140,7 +140,7 @@ export default function SecurityAuditPage() {
         setRunningAll(false);
     };
     const passCount = Object.values(testResults).filter(r => r.status === 'PASS').length;
-    return (<div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    return (<div className="w-full min-h-screen bg-slate-50/60 dark:bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}
@@ -166,53 +166,53 @@ export default function SecurityAuditPage() {
 
         {/* Live Score Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Security Tests</span>
-            <span className="text-2xl font-black text-slate-900 mt-1 block">{SECURITY_TEST_SUITE.length}</span>
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Total Security Tests</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white mt-1 block">{SECURITY_TEST_SUITE.length}</span>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-emerald-200 bg-emerald-50/40 shadow-sm">
-            <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">Passed Checks</span>
-            <span className="text-2xl font-black text-emerald-600 mt-1 block">{passCount}</span>
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm transition-colors">
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Passed Checks</span>
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block">{passCount}</span>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Active User Session</span>
-            <span className="text-base font-black text-primary-600 mt-2 block font-mono">{user?.name} ({role.toUpperCase()})</span>
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Active User Session</span>
+            <span className="text-base font-black text-primary-600 dark:text-primary-400 mt-2 block font-mono">{user?.name} ({role.toUpperCase()})</span>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Protection Architecture</span>
-            <span className="text-xs font-black text-slate-800 mt-2 block">JWT + HttpOnly + RBAC</span>
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Protection Architecture</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200 mt-2 block">JWT + HttpOnly + RBAC</span>
           </div>
         </div>
 
         {/* Test Matrix */}
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
               <Lock className="w-5 h-5 text-primary-600"/>
               <span>Interactive Penetration & Authorization Matrix</span>
             </h2>
-            <span className="text-xs text-slate-400 font-medium">Click "Run Test" on any vector to inspect live HTTP response</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Click "Run Test" on any vector to inspect live HTTP response</span>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {SECURITY_TEST_SUITE.map((test) => {
             const res = testResults[test.id];
-            return (<div key={test.id} className="p-6 space-y-3 hover:bg-slate-50/60 transition-colors">
+            return (<div key={test.id} className="p-6 space-y-3 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2.5">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${test.category === 'ROLE_GUARD' ? 'bg-purple-100 text-purple-700' :
-                    test.category === 'OWNERSHIP' ? 'bg-rose-100 text-rose-700' :
-                        test.category === 'OTP_SECURITY' ? 'bg-amber-100 text-amber-700' :
-                            'bg-emerald-100 text-emerald-700'}`}>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${test.category === 'ROLE_GUARD' ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200/50 dark:border-purple-800/50' :
+                    test.category === 'OWNERSHIP' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/50' :
+                        test.category === 'OTP_SECURITY' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50' :
+                            'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50'}`}>
                           {test.category}
                         </span>
-                        <h3 className="text-sm font-black text-slate-900">{test.title}</h3>
+                        <h3 className="text-sm font-black text-slate-900 dark:text-white">{test.title}</h3>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium">{test.description}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{test.description}</p>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
@@ -226,7 +226,7 @@ export default function SecurityAuditPage() {
                             </span>)}
                         </div>)}
 
-                      <button onClick={() => runSingleTest(test)} disabled={res?.status === 'RUNNING'} className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1 transition-colors">
+                      <button onClick={() => runSingleTest(test)} disabled={res?.status === 'RUNNING'} className="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-primary-600 hover:bg-slate-800 dark:hover:bg-primary-500 text-white font-bold text-xs flex items-center gap-1 transition-colors shadow-sm">
                         <Play className="w-3 h-3 text-cyan-400"/> Run Test
                       </button>
                     </div>
