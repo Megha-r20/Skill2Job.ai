@@ -7,3 +7,6 @@ node_modules/
 *.log
 .vercel
 data/
+/storage/
+/private_uploads/
+/public/uploads/
