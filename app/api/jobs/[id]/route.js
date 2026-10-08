@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
         }
         const { searchParams } = new URL(request.url);
         const studentId = searchParams.get('studentId') || 'std_1';
-        const matchAnalysis = calculateJobMatch(studentId, job.id);
+        const matchAnalysis = await calculateJobMatch(studentId, job);
         const existingApplication = null;
         return NextResponse.json({
             success: true,

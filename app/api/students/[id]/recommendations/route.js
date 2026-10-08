@@ -14,7 +14,7 @@ export async function GET(request, { params }) {
         }
         const { searchParams } = new URL(request.url);
         const query = searchParams.get('query') || 'Software Developer';
-        const recommendation = getCareerRecommendations(query);
+        const recommendation = await getCareerRecommendations(params.id, query);
         return NextResponse.json({
             success: true,
             query,

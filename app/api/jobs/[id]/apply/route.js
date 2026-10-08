@@ -34,7 +34,7 @@ export async function POST(request, { params }) {
             }, { status: 400 });
         }
         // Calculate match percentage at application time
-        const matchData = calculateJobMatch(studentId, job.id);
+        const matchData = await calculateJobMatch(student, job);
         const newApp = {
             id: `app_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             jobId: job.id,

@@ -38,7 +38,7 @@ export async function GET(request, { params }) {
         const placementReadyCount = students.filter(s => s.placementReadiness >= 80 || s.placementStatus === 'Placement Ready').length;
         const needsTrainingCount = students.length - placementReadyCount;
         const placements = applications.filter(a => a.status === 'Selected').length;
-        const industryDemand = calculateIndustrySkillDemand();
+        const industryDemand = await calculateIndustrySkillDemand();
         const trainingPrograms = [];
         const placementDrives = [];
         return NextResponse.json({

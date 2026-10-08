@@ -3,7 +3,7 @@ import { calculateIndustrySkillDemand } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
 export async function GET(request) {
     try {
-        const demand = calculateIndustrySkillDemand();
+        const demand = await calculateIndustrySkillDemand();
         const jobs = await prisma.job.findMany({ where: { status: 'published' } });
         const totalJobs = jobs.length;
         const totalCompanies = await prisma.company.count();

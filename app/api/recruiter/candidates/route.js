@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateJobMatch } from '@/lib/ai';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { studentRepository } from '@/lib/repositories/studentRepository';
 export async function GET(request) {
     try {
         const session = await getAuthenticatedSession(request);
@@ -15,26 +16,26 @@ export async function GET(request) {
         const minCgpa = searchParams.get('minCgpa') ? Number(searchParams.get('minCgpa')) : 0;
         const onlyVerified = searchParams.get('verified') === 'true';
         const jobId = searchParams.get('jobId');
-        let students = await prisma.student.findMany();
+        let students = await studentRepository.findAll();
         if (collegeId && collegeId !== 'All') {
             students = students.filter(s => s.collegeId === collegeId);
         }
         if (minCgpa > 0) {
             students = students.filter(s => s.cgpa >= minCgpa);
         }
-        const candidateCards = students.map(student => {
-            const studentSkills = [];
-            const verifiedSkills = [];
+        const candidateCards = await Promise.all(students.map(async student => {
+            const studentSkills = student.skills || [];
+            const verifiedSkills = studentSkills.filter(s => s.status === 'Verified');
             const projects = [];
             const assessments = [];
             let jobMatch = 0;
             if (jobId) {
-                const matchData = calculateJobMatch(student.id, jobId);
+                const matchData = await calculateJobMatch(student, jobId);
                 jobMatch = matchData.matchPercentage;
             }
             else {
                 // General match based on readiness
-                jobMatch = student.placementReadiness;
+                jobMatch = student.placementReadiness || 75;
             }
             return {
                 ...student,
@@ -45,7 +46,7 @@ export async function GET(request) {
                 jobMatch,
                 hasVerifiedSkills: verifiedSkills.length > 0
             };
-        });
+        }));
         let filtered = candidateCards;
         if (onlyVerified) {
             filtered = filtered.filter(c => c.verifiedSkills.length > 0);

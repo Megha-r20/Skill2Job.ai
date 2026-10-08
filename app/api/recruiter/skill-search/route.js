@@ -13,7 +13,7 @@ export async function POST(request) {
         if (!queryText) {
             return NextResponse.json({ success: false, error: 'queryText is required' }, { status: 400 });
         }
-        const candidates = matchTalentBySkillsQuery(queryText, {
+        const candidates = await matchTalentBySkillsQuery(queryText, {
             minCgpa: minCgpa ? Number(minCgpa) : undefined,
             collegeId: collegeId || undefined
         });

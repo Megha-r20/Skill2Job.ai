@@ -15,7 +15,7 @@ export async function GET(request, { params }) {
         const { searchParams } = new URL(request.url);
         const jobId = searchParams.get('jobId') || undefined;
         const targetRole = searchParams.get('targetRole') || undefined;
-        const roadmap = generatePersonalizedRoadmap(params.id, jobId, targetRole);
+        const roadmap = await generatePersonalizedRoadmap(params.id, jobId, targetRole);
         return NextResponse.json({
             success: true,
             roadmap

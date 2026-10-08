@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
         const studentId = params.id;
         const { searchParams } = new URL(request.url);
         const jobId = searchParams.get('jobId') || undefined;
-        const readiness = calculateComprehensiveJobReadiness(studentId, jobId);
+        const readiness = await calculateComprehensiveJobReadiness(studentId, jobId);
         return NextResponse.json({
             success: true,
             readiness

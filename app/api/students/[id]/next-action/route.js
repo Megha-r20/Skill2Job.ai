@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
             return ownerAuth.errorResponse;
         }
         const studentId = params.id;
-        const nextAction = getNextBestAction(studentId);
+        const nextAction = await getNextBestAction(studentId);
         return NextResponse.json({
             success: true,
             nextAction

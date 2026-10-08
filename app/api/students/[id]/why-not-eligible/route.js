@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
         if (!jobId) {
             return NextResponse.json({ success: false, error: 'jobId query parameter required' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
         }
-        const diagnostic = explainWhyNotEligible(studentId, jobId);
+        const diagnostic = await explainWhyNotEligible(studentId, jobId);
         return NextResponse.json({
             success: true,
             diagnostic
