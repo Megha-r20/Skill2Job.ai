@@ -6,7 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
 import GoogleSignInModal from '@/components/GoogleSignInModal';
-import LiveOtpNotificationBanner from '@/components/LiveOtpNotificationBanner';
 import { Lock, Mail, ArrowRight, Sparkles, GraduationCap, Building2, CheckCircle2, AlertCircle, KeyRound, Eye, EyeOff, Briefcase, Sun, Moon, ArrowLeft } from 'lucide-react';
 export default function LoginPage() {
     const router = useRouter();

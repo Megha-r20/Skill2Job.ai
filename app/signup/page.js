@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
-import LiveOtpNotificationBanner from '@/components/LiveOtpNotificationBanner';
 import GoogleSignInModal from '@/components/GoogleSignInModal';
 import { GraduationCap, Building2, Briefcase, CheckCircle2, Lock, Mail, Phone, ArrowRight, Sparkles, AlertCircle, Eye, EyeOff, Sun, Moon, ArrowLeft, User, Code2 } from 'lucide-react';
 export default function SignupPage() {
@@ -676,17 +675,6 @@ function SignupContent() {
         {/* 🔑 STEP 3: 6-DIGIT EMAIL OTP VERIFICATION SCREEN                           */}
         {/* ========================================================================= */}
         {currentStep === 'otp_email' && (<div className="max-w-md mx-auto space-y-6">
-            
-            {/* Live simulated OTP notification for 1-click test auto-fill */}
-            <LiveOtpNotificationBanner filterDestination={email} onSelectOtp={(code) => {
-                const chars = code.split('').slice(0, 6);
-                const newDigits = [...otpDigits];
-                chars.forEach((c, i) => {
-                    newDigits[i] = c;
-                });
-                setOtpDigits(newDigits);
-            }}/>
-
             <div className="bg-card text-card-foreground rounded-3xl border border-border dark:border-white/10 shadow-xl p-8 space-y-6 text-center backdrop-blur-xl">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-inner">
                 <Mail className="w-7 h-7"/>

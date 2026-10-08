@@ -6,7 +6,4 @@ node_modules/
 *.tsbuildinfo
 *.log
 .vercel
-node_modules/
-.next/
-.env
-.env.local
+data/
