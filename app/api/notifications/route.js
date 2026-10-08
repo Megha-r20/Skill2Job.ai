@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { getAuthenticatedSession } from '@/lib/authMiddleware';
 export async function GET(request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const userId = searchParams.get('userId') || 'u_student_1';
+        const session = await getAuthenticatedSession(request);
+        if (!session) {
+            return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
+        const userId = session.userId;
         const notifications = [
             {
                 id: 'notif_1',
@@ -34,6 +38,10 @@ export async function GET(request) {
 }
 export async function PUT(request) {
     try {
+        const session = await getAuthenticatedSession(request);
+        if (!session) {
+            return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
         const body = await request.json();
         const { notificationId } = body;
         return NextResponse.json({ success: true, markedRead: notificationId || true }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });

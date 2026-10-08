@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { jwtVerify } from 'jose';
+
 // Role-protected URL paths
 const PROTECTED_ROUTES = [
     { prefix: '/student', allowedRole: 'student' },
@@ -7,22 +9,28 @@ const PROTECTED_ROUTES = [
     { prefix: '/company', allowedRole: 'company' },
     { prefix: '/admin', allowedRole: 'admin' },
 ];
+
+function getSecretKey() {
+    const secret = process.env.JWT_SECRET;
+    if (!secret || !secret.trim()) return null;
+    return new TextEncoder().encode(secret.trim());
+}
+
 /**
- * Lightweight Edge-compatible JWT Payload extraction
+ * Edge-compatible cryptographic JWT signature and expiration verification using jose
  */
-function parseEdgeSession(token) {
+async function verifyEdgeSession(token) {
     try {
         if (!token || typeof token !== 'string')
             return null;
-        const parts = token.split('.');
-        if (parts.length !== 3)
+        const secretKey = getSecretKey();
+        if (!secretKey)
             return null;
-        let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-        while (base64.length % 4)
-            base64 += '=';
-        const jsonStr = atob(base64);
-        const payload = JSON.parse(jsonStr);
+        const { payload } = await jwtVerify(token, secretKey);
         const nowSec = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp < nowSec) {
+            return null;
+        }
         if (payload.expiresAt && payload.expiresAt < nowSec) {
             return null;
         }
@@ -32,7 +40,8 @@ function parseEdgeSession(token) {
         return null;
     }
 }
-export function middleware(request) {
+
+export async function middleware(request) {
     const { pathname } = request.nextUrl;
     // Match protected page routes
     const matchedRoute = PROTECTED_ROUTES.find(r => pathname.startsWith(r.prefix));
@@ -49,7 +58,8 @@ export function middleware(request) {
         loginUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(loginUrl);
     }
-    const session = parseEdgeSession(token);
+    // Cryptographically verify session token with jose
+    const session = await verifyEdgeSession(token);
     if (!session) {
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('redirect', pathname);
@@ -70,6 +80,7 @@ export function middleware(request) {
     }
     return NextResponse.next();
 }
+
 export const config = {
     matcher: [
         '/student/:path*',

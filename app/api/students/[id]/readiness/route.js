@@ -1,7 +1,19 @@
 import { NextResponse } from 'next/server';
 import { calculateComprehensiveJobReadiness } from '@/lib/ai';
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 export async function GET(request, { params }) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['student', 'college', 'company', 'admin']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
+        if (session.role === 'student' || session.role === 'college') {
+            const ownerAuth = await authorizeOwnership(session, params.id, 'student');
+            if (!ownerAuth.authorized) {
+                return ownerAuth.errorResponse;
+            }
+        }
         const studentId = params.id;
         const { searchParams } = new URL(request.url);
         const jobId = searchParams.get('jobId') || undefined;

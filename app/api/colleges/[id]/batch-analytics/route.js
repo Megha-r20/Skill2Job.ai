@@ -1,12 +1,29 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 export async function GET(request, { params }) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['college', 'admin']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
+        if (session.role === 'college') {
+            const ownerAuth = await authorizeOwnership(session, params.id, 'college');
+            if (!ownerAuth.authorized) {
+                return ownerAuth.errorResponse;
+            }
+        }
         const collegeId = params.id;
         const { searchParams } = new URL(request.url);
         const batchYear = searchParams.get('batchYear') || '2026';
         const department = searchParams.get('department') || 'All';
-        let students = await (await prisma.student.findMany()).filter(s => s.collegeId === collegeId);
+        let students = [];
+        try {
+            students = (await prisma.student.findMany()).filter(s => s.collegeId === collegeId);
+        } catch (dbErr) {
+            console.warn('[batch-analytics] DB offline; using mock batch data.');
+        }
         if (department !== 'All') {
             students = students.filter(s => s.department.toLowerCase().includes(department.toLowerCase()));
         }

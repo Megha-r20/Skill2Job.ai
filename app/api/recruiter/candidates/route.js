@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateJobMatch } from '@/lib/ai';
+import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
 export async function GET(request) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['company', 'admin']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
         const { searchParams } = new URL(request.url);
         const skill = searchParams.get('skill')?.toLowerCase();
         const collegeId = searchParams.get('collegeId');

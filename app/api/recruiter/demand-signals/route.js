@@ -1,2 +1,13 @@
 import { NextResponse } from 'next/server';
-export async function GET() { return NextResponse.json({ success: true, signals: [] }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } }); }
+import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+
+export async function GET(request) {
+    try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['company', 'admin']);
+        if (!roleAuth.authorized) return roleAuth.errorResponse;
+        return NextResponse.json({ success: true, signals: [] });
+    } catch (err) {
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    }
+}

@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { matchTalentBySkillsQuery } from '@/lib/ai';
+import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
 export async function POST(request) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['company', 'admin']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
         const body = await request.json();
         const { queryText, minCgpa, collegeId } = body;
         if (!queryText) {

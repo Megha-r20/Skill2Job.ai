@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { jobRepository } from '@/lib/repositories/jobRepository';
+import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
 export const revalidate = 60; // Cache this route for 60 seconds (Phase 15)
 export async function GET(request) {
     try {
@@ -29,13 +30,19 @@ export async function GET(request) {
 }
 export async function POST(request) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['company', 'admin']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
         const body = await request.json();
         const { companyId, companyName, companyLogo, title, department, description, responsibilities, requirements, requiredSkills, location, workMode, salary, employmentType, minCgpa, graduationYear, degree, branch, openings, deadline } = body;
         if (!title || !requiredSkills || !Array.isArray(requiredSkills)) {
             return NextResponse.json({ error: 'Job title and required skills array are required.' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
         }
+        const assignedCompanyId = session.role === 'company' && session.companyId ? session.companyId : (companyId || 'comp_1');
         const newJob = {
-            companyId: companyId || 'comp_1',
+            companyId: assignedCompanyId,
             companyName: companyName || 'Partner Recruiter',
             companyLogo: companyLogo || 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&auto=format&fit=crop&q=80',
             title,

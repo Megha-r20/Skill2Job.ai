@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { aiService } from '@/lib/services/aiService';
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 import fs from 'fs';
 import path from 'path';
 const pdfParse = require('pdf-parse');
 // Removed deprecated config
 export async function POST(request, { params }) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['student']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
+        const ownerAuth = await authorizeOwnership(session, params.id, 'student');
+        if (!ownerAuth.authorized) {
+            return ownerAuth.errorResponse;
+        }
         const formData = await request.formData();
         const file = formData.get('resume');
         const jobId = formData.get('jobId');

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { studentRepository } from '@/lib/repositories/studentRepository';
-import { getAuthenticatedSession } from '@/lib/authMiddleware';
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 
 function buildAcademicReport(student) {
     const sName = student?.fullName || 'Alex Rivera';
@@ -133,7 +133,18 @@ function buildAcademicReport(student) {
 
 export async function GET(request, { params }) {
     try {
-        const studentId = params.id || 'std_1';
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['student', 'college', 'admin']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
+
+        const ownerAuth = await authorizeOwnership(session, params.id, 'student');
+        if (!ownerAuth.authorized) {
+            return ownerAuth.errorResponse;
+        }
+
+        const studentId = params.id;
         let student = null;
         try {
             student = await studentRepository.findById(studentId);

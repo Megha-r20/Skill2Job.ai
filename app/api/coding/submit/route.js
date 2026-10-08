@@ -1,8 +1,21 @@
 import { NextResponse } from 'next/server';
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 export async function POST(request) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['student', 'admin']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
         const body = await request.json();
-        const { problemId = 'cp_1', language = 'python', code = '', studentId = 'std_1' } = body;
+        const { problemId = 'cp_1', language = 'python', code = '', studentId: reqStudentId } = body;
+        const studentId = reqStudentId || session.studentId || session.userId;
+        if (session.role === 'student') {
+            const ownerAuth = await authorizeOwnership(session, studentId, 'student');
+            if (!ownerAuth.authorized) {
+                return ownerAuth.errorResponse;
+            }
+        }
         const problem = {
             id: problemId,
             title: 'Two Sum Problem',

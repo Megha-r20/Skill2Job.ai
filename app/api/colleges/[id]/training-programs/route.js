@@ -1,3 +1,32 @@
 import { NextResponse } from 'next/server';
-export async function GET() { return NextResponse.json({ success: true, programs: [] }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } }); }
-export async function POST() { return NextResponse.json({ success: true, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } }); }
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
+
+export async function GET(request, { params }) {
+    try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['college', 'admin']);
+        if (!roleAuth.authorized) return roleAuth.errorResponse;
+        if (session.role === 'college') {
+            const ownerAuth = await authorizeOwnership(session, params.id, 'college');
+            if (!ownerAuth.authorized) return ownerAuth.errorResponse;
+        }
+        return NextResponse.json({ success: true, programs: [] });
+    } catch (err) {
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+export async function POST(request, { params }) {
+    try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['college', 'admin']);
+        if (!roleAuth.authorized) return roleAuth.errorResponse;
+        if (session.role === 'college') {
+            const ownerAuth = await authorizeOwnership(session, params.id, 'college');
+            if (!ownerAuth.authorized) return ownerAuth.errorResponse;
+        }
+        return NextResponse.json({ success: true });
+    } catch (err) {
+        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    }
+}

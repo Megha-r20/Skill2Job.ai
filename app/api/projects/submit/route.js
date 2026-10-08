@@ -1,10 +1,23 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 
 export async function POST(request) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['student']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
+
         const body = await request.json();
-        const { studentId, projectId, title, description, technologies, githubUrl, liveUrl } = body;
+        const { studentId: reqStudentId, projectId, title, description, technologies, githubUrl, liveUrl } = body;
+        const studentId = reqStudentId || session.studentId || session.userId;
+
+        const ownerAuth = await authorizeOwnership(session, studentId, 'student');
+        if (!ownerAuth.authorized) {
+            return ownerAuth.errorResponse;
+        }
 
         if (!studentId || !title) {
             return NextResponse.json({ success: false, error: 'Student ID and project title are required.' }, { status: 400 });

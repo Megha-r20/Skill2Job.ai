@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { getAuthenticatedSession } from '@/lib/authMiddleware';
 export async function POST(request) {
     try {
+        const session = await getAuthenticatedSession(request);
+        if (!session) {
+            return NextResponse.json({ success: false, error: 'Authentication required to upload files.' }, { status: 401 });
+        }
         const formData = await request.formData();
         const file = formData.get('file');
         const uploadType = formData.get('type') || 'resume'; // 'resume' | 'logo' | 'document'

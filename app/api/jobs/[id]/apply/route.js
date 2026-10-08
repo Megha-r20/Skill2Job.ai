@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateJobMatch } from '@/lib/ai';
+import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 export async function POST(request, { params }) {
     try {
+        const session = await getAuthenticatedSession(request);
+        const roleAuth = authorizeRole(session, ['student']);
+        if (!roleAuth.authorized) {
+            return roleAuth.errorResponse;
+        }
         const body = await request.json();
-        const { studentId, notes } = body;
-        if (!studentId) {
-            return NextResponse.json({ error: 'Student ID is required' }, { status: 400 });
+        const { studentId: reqStudentId, notes } = body;
+        const studentId = reqStudentId || session.studentId || session.userId;
+        const ownerAuth = await authorizeOwnership(session, studentId, 'student');
+        if (!ownerAuth.authorized) {
+            return ownerAuth.errorResponse;
         }
         const job = await prisma.job.findUnique({ where: { id: params.id } });
         if (!job) {
