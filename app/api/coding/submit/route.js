@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
+import { codingProblemRepository } from '@/lib/repositories/codingProblemRepository';
+import { codeExecutionService } from '@/lib/services/codeExecutionService';
+
 export async function POST(request) {
     try {
         const session = await getAuthenticatedSession(request);
@@ -7,54 +10,63 @@ export async function POST(request) {
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
+
         const body = await request.json();
         const { problemId = 'cp_1', language = 'python', code = '', studentId: reqStudentId } = body;
         const studentId = reqStudentId || session.studentId || session.userId;
+
         if (session.role === 'student') {
             const ownerAuth = await authorizeOwnership(session, studentId, 'student');
             if (!ownerAuth.authorized) {
                 return ownerAuth.errorResponse;
             }
         }
-        const problem = {
-            id: problemId,
-            title: 'Two Sum Problem',
-            topic: 'Data Structures & Algorithms',
-            testCases: [
-                { input: '[2,7,11,15], target=9', expectedOutput: '[0,1]' },
-                { input: '[3,2,4], target=6', expectedOutput: '[1,2]' }
-            ]
-        };
-        const hasReturn = code.includes('return');
-        const isPassed = hasReturn && code.length > 30;
+
+        if (!code || typeof code !== 'string' || !code.trim()) {
+            return NextResponse.json({
+                success: false,
+                error: 'Source code is required for evaluation.'
+            }, { status: 400 });
+        }
+
+        const problem = codingProblemRepository.findById(problemId);
+        if (!problem) {
+            return NextResponse.json({
+                success: false,
+                error: `Problem with ID '${problemId}' not found.`
+            }, { status: 404 });
+        }
+
+        // Real code execution and testcase validation via Sandbox / Piston / Judge0
+        const judgment = await codeExecutionService.judgeSubmission({
+            problem,
+            language,
+            code
+        });
+
         const attempt = {
             id: `catt_${Date.now()}`,
             studentId,
-            problemId,
+            problemId: problem.id,
             problemTitle: problem.title,
             topic: problem.topic,
             language,
             code,
-            status: isPassed ? 'Solved ✓' : 'Failed',
-            accuracy: isPassed ? 100 : 33,
-            executionTimeMs: Math.round(15 + Math.random() * 45),
+            status: judgment.passed ? 'Solved ✓' : 'Failed',
+            accuracy: judgment.accuracy,
+            executionTimeMs: judgment.executionTimeMs,
             submittedAt: new Date().toISOString()
         };
+
         return NextResponse.json({
             success: true,
-            passed: isPassed,
+            passed: judgment.passed,
             attempt,
-            testCaseResults: problem.testCases.map((tc, idx) => ({
-                testCaseIndex: idx + 1,
-                input: tc.input,
-                expectedOutput: tc.expectedOutput,
-                actualOutput: isPassed ? tc.expectedOutput : 'None',
-                passed: isPassed
-            }))
+            testCaseResults: judgment.testCaseResults
         });
     }
     catch (error) {
         console.error('Error submitting code:', error);
-        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ success: false, error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }
