@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
+import { verifyGoogleIdToken } from '@/lib/googleAuth';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
 import { registerSchema } from '@/lib/validations';
 import { checkRateLimit, rateLimitExceededResponse } from '@/lib/rateLimit';
@@ -16,8 +17,21 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
         }
         const body = result.data;
-        const { role, password, email, phone, name, isGoogleAuth } = body;
-        if (!isGoogleAuth && (!password || password.length < 6)) {
+        const { role, password, email, phone, name, isGoogleAuth, googleCredential } = body;
+        
+        let isGoogleVerified = false;
+        if (googleCredential) {
+            const verification = await verifyGoogleIdToken(googleCredential);
+            if (!verification.success) {
+                return NextResponse.json({ error: verification.error || 'Invalid or unverified Google ID token.' }, { status: 401 });
+            }
+            if (verification.email !== email.trim().toLowerCase()) {
+                return NextResponse.json({ error: 'Google ID token email does not match registration email.' }, { status: 400 });
+            }
+            isGoogleVerified = true;
+        }
+
+        if (!isGoogleVerified && (!password || password.length < 6)) {
             return NextResponse.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
         }
         // Check duplicate account

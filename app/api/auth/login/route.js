@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { otpRepository } from '@/lib/repositories/otpRepository';
+import { verifyGoogleIdToken } from '@/lib/googleAuth';
 import { signSessionToken, logSecurityEvent, getAuthenticatedSession } from '@/lib/authMiddleware';
 import { loginSchema } from '@/lib/validations';
 import { checkRateLimit, rateLimitExceededResponse } from '@/lib/rateLimit';
@@ -26,27 +27,18 @@ export async function POST(request) {
 
         // 1. Google OAuth / OpenID Connect Identity Resolution
         if (isGoogleAuth || googleCredential) {
-            let googleEmail = email?.toLowerCase();
-            let googleName = rawBody.name || 'Google User';
-
-            // Parse Google ID Token payload if present
-            if (googleCredential) {
-                try {
-                    const payloadBase64 = googleCredential.split('.')[1];
-                    if (payloadBase64) {
-                        const decoded = JSON.parse(Buffer.from(payloadBase64, 'base64').toString('utf-8'));
-                        googleEmail = decoded.email?.toLowerCase() || googleEmail;
-                        googleName = decoded.name || googleName;
-                    }
-                }
-                catch (e) {
-                    console.warn('Could not parse Google ID Token:', e);
-                }
+            if (!googleCredential) {
+                return NextResponse.json({ error: 'Google ID token (googleCredential) is required for Google authentication.' }, { status: 400 });
             }
 
-            if (!googleEmail) {
-                return NextResponse.json({ error: 'Valid Google email is required.' }, { status: 400 });
+            const verification = await verifyGoogleIdToken(googleCredential);
+            if (!verification.success) {
+                logSecurityEvent('GOOGLE_TOKEN_VERIFICATION_FAILED', { error: verification.error });
+                return NextResponse.json({ error: verification.error || 'Invalid or unverified Google ID token.' }, { status: 401 });
             }
+
+            const googleEmail = verification.email;
+            const googleName = verification.name;
 
             // Check if user already has an account
             user = await userRepository.findByEmail(googleEmail);
