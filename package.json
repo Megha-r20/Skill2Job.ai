@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "test": "node --test tests/ai.test.mjs tests/coding-sandbox.test.mjs tests/file-validation.test.mjs tests/auth-security.test.mjs tests/otp-security.test.mjs && node scripts/sanity.test.mjs",
+    "test:sanity": "node scripts/sanity.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1147.0",
