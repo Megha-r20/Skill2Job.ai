@@ -53,37 +53,31 @@ export function AuthProvider({ children }) {
     const [isLoading, setIsLoading] = useState(true);
     // Initialize with logged-in user session or active persona
     useEffect(() => {
-        const savedUserId = typeof window !== 'undefined' ? localStorage.getItem('s2h_user_id') : null;
-        const savedRole = typeof window !== 'undefined' ? localStorage.getItem('s2h_role') : null;
-        if (savedUserId) {
-            // Fetch the actual authenticated user account from backend
-            fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: savedUserId })
-            })
-                .then(res => res.json())
-                .then(data => {
+        fetch('/api/auth/login')
+            .then(res => res.json())
+            .then(data => {
                 if (data.success && data.user) {
                     setUser(data.user);
                     setProfile(data.profile);
+                } else {
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem('s2h_user_id');
+                        localStorage.removeItem('s2h_role');
+                    }
                 }
             })
-                .catch(e => console.error('Session load error', e))
-                .finally(() => setIsLoading(false));
-        }
-        else {
-            setIsLoading(false);
-        }
+            .catch(e => console.error('Session load error', e))
+            .finally(() => setIsLoading(false));
     }, []);
+
     const switchPersona = async (role, userId) => {
         setIsLoading(true);
         try {
-            const targetId = userId || DEMO_PERSONAS.find(p => p.role === role)?.userId || 'u_student_1';
+            const persona = DEMO_PERSONAS.find(p => (userId && p.userId === userId) || (role && p.role === role)) || DEMO_PERSONAS[0];
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: targetId })
+                body: JSON.stringify({ identifier: persona.email, password: 'password123' })
             });
             const data = await res.json();
             if (data.success) {
