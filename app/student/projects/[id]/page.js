@@ -189,7 +189,7 @@ export default function ProjectWorkspacePage({ params }) {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     useEffect(() => {
         // Fetch recommendations and find by id
-        fetch('/api/projects/recommendations')
+        fetch('/api/projects/recommendations?role=all')
             .then(res => res.json())
             .then(data => {
             if (data.recommendations) {
