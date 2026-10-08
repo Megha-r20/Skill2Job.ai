@@ -12,6 +12,7 @@ import {
     matchTalentBySkillsQuery,
     calculateIndustrySkillDemand
 } from '../lib/ai.js';
+import { aiService, DEFAULT_GEMINI_MODEL } from '../lib/services/aiService.js';
 
 describe('AI Matching & Analytics Engine', () => {
     it('calculates dynamic job match percentage based on student skills and requirements', async () => {
@@ -105,4 +106,51 @@ describe('AI Matching & Analytics Engine', () => {
         // Samantha Chen (std_2) has verified Machine Learning
         assert.equal(mlCandidates[0].name, 'Samantha Chen');
     });
+
+    describe('Configurable Gemini Model Architecture', () => {
+        const originalEnvModel = process.env.GEMINI_MODEL;
+
+        it('defaults to modern gemini-2.0-flash instead of deprecated gemini-1.5-flash', () => {
+            delete process.env.GEMINI_MODEL;
+            aiService.setModelName(null);
+            assert.equal(DEFAULT_GEMINI_MODEL, 'gemini-2.0-flash');
+            assert.equal(aiService.getModelName(), 'gemini-2.0-flash');
+        });
+
+        it('reads configurable model name from GEMINI_MODEL environment variable', () => {
+            process.env.GEMINI_MODEL = 'gemini-2.5-flash';
+            aiService.setModelName(null);
+            assert.equal(aiService.getModelName(), 'gemini-2.5-flash');
+        });
+
+        it('allows programmatic model override via setModelName', () => {
+            aiService.setModelName('gemini-2.5-pro');
+            assert.equal(aiService.getModelName(), 'gemini-2.5-pro');
+            // Reset programmatic override
+            aiService.setModelName(null);
+        });
+
+        it('allows per-call model override passed in options', () => {
+            process.env.GEMINI_MODEL = 'gemini-2.0-flash';
+            aiService.setModelName(null);
+            assert.equal(aiService.getModelName('gemini-ultra-custom'), 'gemini-ultra-custom');
+        });
+
+        it('instantiates Gemini GenerativeModel with the configured model name', () => {
+            process.env.GEMINI_MODEL = 'gemini-2.5-flash';
+            const modelInstance = aiService.getModel();
+            assert.equal(modelInstance.model, 'models/gemini-2.5-flash');
+
+            const customInstance = aiService.getModel('gemini-2.5-pro');
+            assert.equal(customInstance.model, 'models/gemini-2.5-pro');
+
+            // Restore original env
+            if (originalEnvModel !== undefined) {
+                process.env.GEMINI_MODEL = originalEnvModel;
+            } else {
+                delete process.env.GEMINI_MODEL;
+            }
+        });
+    });
 });
+

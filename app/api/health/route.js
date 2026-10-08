@@ -9,6 +9,7 @@ export async function GET() {
             status: 'healthy',
             database: 'connected',
             ai: process.env.GEMINI_API_KEY ? 'configured' : 'mock-mode',
+            aiModel: (process.env.GEMINI_MODEL || 'gemini-2.0-flash').trim(),
             environment: process.env.NODE_ENV,
             timestamp: new Date().toISOString()
         };
