@@ -605,21 +605,21 @@ export default function InterviewCoachPage() {
         return maxMood;
     };
     return (<ProtectedRoute allowedRoles={['student']}>
-      <div className="min-h-screen bg-slate-50 py-8">
+      <div className="w-full min-h-screen bg-slate-50/60 dark:bg-slate-950 py-8 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
           {/* Nav Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-colors">
             <div className="space-y-1">
               <span className="text-xs font-bold uppercase tracking-wider text-purple-600 flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse"/>
                 <span>AI Placement Readiness Feature</span>
               </span>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">AI Microphone Mock Interview</h1>
-              <p className="text-xs text-slate-500">Practice live technical interviews using your webcam and mic. Evaluated in real-time by AI.</p>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">AI Microphone Mock Interview</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Practice live technical interviews using your webcam and mic. Evaluated in real-time by AI.</p>
             </div>
             
-            <Link href="/student/dashboard" className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors shrink-0">
+            <Link href="/student/dashboard" className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors shrink-0">
               ← Dashboard
             </Link>
           </div>
@@ -628,18 +628,18 @@ export default function InterviewCoachPage() {
         /* ========================================================================= */
         /* 📋 SETUP WINDOW VIEW                                                      */
         /* ========================================================================= */
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm max-w-2xl mx-auto space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm max-w-2xl mx-auto space-y-6 transition-colors">
               <div className="text-center space-y-2">
-                <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto text-purple-600 border border-purple-100 shadow-sm">
+                <div className="w-16 h-16 bg-purple-50 dark:bg-purple-950/50 rounded-2xl flex items-center justify-center mx-auto text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800/50 shadow-sm">
                   <UserCheck className="w-8 h-8"/>
                 </div>
-                <h2 className="text-lg font-black text-slate-900">Configure Your Mock Interview</h2>
-                <p className="text-xs text-slate-500">Select your target career path to calibrate the AI interviewer\'s query pool.</p>
+                <h2 className="text-lg font-black text-slate-900 dark:text-white">Configure Your Mock Interview</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Select your target career path to calibrate the AI interviewer's query pool.</p>
               </div>
 
               {/* Role Select options */}
               <div className="space-y-3">
-                <label className="text-xs font-black text-slate-700 uppercase tracking-wider block">Target Role:</label>
+                <label className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider block">Target Role:</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {[
                 { id: 'Software Engineer', label: 'Software Engineer', desc: 'React, System Design, SQL, JS Event Loop, Security' },
@@ -648,20 +648,20 @@ export default function InterviewCoachPage() {
                 { id: 'ML Engineer', label: 'ML Engineer', desc: 'Overfitting, Attention, Quantization, PyTorch' },
                 { id: 'Data Analyst', label: 'Data Analyst', desc: 'SQL Joins, Pandas cleaning, Correlation metrics' }
             ].map((role) => (<button key={role.id} onClick={() => setSelectedRole(role.id)} className={`p-5 rounded-2xl border text-left transition-all flex flex-col justify-between ${selectedRole === role.id
-                    ? 'bg-purple-50/50 border-purple-500 shadow-md ring-2 ring-purple-500/10'
-                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200'}`}>
-                      <span className="font-extrabold text-sm text-slate-900 block mb-1">{role.label}</span>
-                      <span className="text-[10px] text-slate-500 leading-snug">{role.desc}</span>
+                    ? 'bg-purple-50/60 dark:bg-purple-950/60 border-purple-500 dark:border-purple-400 shadow-md ring-2 ring-purple-500/20'
+                    : 'bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700/60'}`}>
+                      <span className="font-extrabold text-sm text-slate-900 dark:text-white block mb-1">{role.label}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-snug">{role.desc}</span>
                     </button>))}
                 </div>
               </div>
 
               {/* Hardware Requirements Notice */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs text-slate-600">
-                <span className="font-bold text-slate-800 flex items-center gap-1">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-2 text-xs text-slate-600 dark:text-slate-300 transition-colors">
+                <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                   <Activity className="w-3.5 h-3.5 text-purple-600 animate-pulse"/> Live Hardware Setup Requirements:
                 </span>
-                <ul className="list-disc list-inside space-y-1 text-slate-500 pl-1 text-[11px]">
+                <ul className="list-disc list-inside space-y-1 text-slate-500 dark:text-slate-400 pl-1 text-[11px]">
                   <li>Allows notebook microphone access for voice transcription.</li>
                   <li>Opens a small floating web camera preview to simulate visual interview presence.</li>
                   <li>Enable audio output to hear the AI Interviewer speak questions.</li>
@@ -710,35 +710,35 @@ export default function InterviewCoachPage() {
                 </div>
 
                 {/* Live Sentiment & Mood Monitor */}
-                <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm space-y-2">
-                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Live Sentiment Analysis</h3>
-                  <div className="flex items-center gap-2 p-3 rounded-2xl bg-purple-50/50 border border-purple-100">
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 transition-colors">
+                  <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Live Sentiment Analysis</h3>
+                  <div className="flex items-center gap-2 p-3 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40">
                     <Smile className={`w-5 h-5 ${liveSentiment === 'Confident' ? 'text-emerald-500' : liveSentiment === 'Analytical' ? 'text-cyan-500' : liveSentiment === 'Hesitant' ? 'text-amber-500' : 'text-slate-500'}`}/>
                     <div>
                       <span className="text-[10px] text-slate-400 block font-bold">Response Emotional Tone:</span>
-                      <span className="text-xs font-black text-slate-800">{liveSentiment} Mood</span>
+                      <span className="text-xs font-black text-slate-800 dark:text-slate-100">{liveSentiment} Mood</span>
                     </div>
                   </div>
-                  <span className="text-[9px] text-slate-400 block leading-tight">Mood updates dynamically based on vocabulary selection, confidence keywords, and usage of voice filler words.</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 block leading-tight">Mood updates dynamically based on vocabulary selection, confidence keywords, and usage of voice filler words.</span>
                 </div>
 
                 {/* Session telemetry indicators */}
-                <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm space-y-3.5">
-                  <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Interview Progress</h3>
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5 transition-colors">
+                  <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Interview Progress</h3>
                   
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs text-slate-500 font-bold">
+                    <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-bold">
                       <span>Questions Answered:</span>
                       <span className="text-purple-600 font-black">{currentQuestionIndex + 1} / 5</span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                       <div className="h-full bg-purple-600 rounded-full transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / 5) * 100}%` }}/>
                     </div>
                   </div>
 
-                  <div className="border-t border-slate-100 pt-3 flex items-center justify-between text-xs">
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex items-center justify-between text-xs">
                     <span className="text-slate-500 font-bold">Target Path:</span>
-                    <span className="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 font-bold text-[10px]">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[10px]">
                       {selectedRole}
                     </span>
                   </div>
@@ -747,12 +747,12 @@ export default function InterviewCoachPage() {
               </div>
 
               {/* Right Panel: Active Question & Audio Answer Interface (8 Cols) */}
-              <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col justify-between min-h-[400px] space-y-6">
+              <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between min-h-[400px] space-y-6 transition-colors">
                 
                 {/* Question Block */}
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <span className="px-2.5 py-0.5 rounded-lg bg-purple-50 text-purple-700 font-black text-[10px] uppercase tracking-wider">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200/40 dark:border-purple-800/40 font-black text-[10px] uppercase tracking-wider">
                       Question {currentQuestionIndex + 1} of 5
                     </span>
                     
@@ -760,19 +760,19 @@ export default function InterviewCoachPage() {
                 setIsMuted(!isMuted);
                 if (!isMuted)
                     window.speechSynthesis.cancel();
-            }} className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-700 font-bold">
+            }} className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-bold">
                       {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-500"/> : <Volume2 className="w-3.5 h-3.5 text-purple-600"/>}
                       <span>{isMuted ? 'Muted' : 'Sound On'}</span>
                     </button>
                   </div>
 
                   <div className="flex gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
+                    <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-800/40">
                       <MessageSquare className="w-5 h-5"/>
                     </div>
                     <div className="space-y-1">
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">AI Interviewer:</span>
-                      <h2 className="text-sm sm:text-base font-extrabold text-slate-900 leading-relaxed">
+                      <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-relaxed">
                         {INTERVIEW_ROLE_QUESTIONS[selectedRole][currentQuestionIndex].question}
                       </h2>
                     </div>
@@ -782,7 +782,7 @@ export default function InterviewCoachPage() {
                 {/* Answer recording interface */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-xs">
-                    <label className="font-black text-slate-700 uppercase tracking-wider block">Your Spoken Response:</label>
+                    <label className="font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider block">Your Spoken Response:</label>
                     
                     <button onClick={handleToggleRecording} className={`px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold flex items-center gap-1.5 transition-all shadow-sm ${isRecording
                 ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 animate-pulse border border-rose-200'
@@ -797,11 +797,11 @@ export default function InterviewCoachPage() {
                       <span>{speechError}</span>
                     </div>)}
 
-                  <textarea rows={6} value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} placeholder="Describe your technical logic, architecture parameters, and business trade-offs aloud or type it directly..." className="w-full p-4 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-purple-500 focus:outline-none leading-relaxed font-sans"/>
+                  <textarea rows={6} value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} placeholder="Describe your technical logic, architecture parameters, and business trade-offs aloud or type it directly..." className="w-full p-4 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-purple-500 focus:outline-none leading-relaxed font-sans transition-colors"/>
                 </div>
 
                 {/* Submissions action triggers */}
-                <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
                   <button onClick={handleReset} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">
                     Cancel Session
                   </button>
@@ -821,19 +821,19 @@ export default function InterviewCoachPage() {
         /* ========================================================================= */
         /* 📊 FINAL EVALUATION SCORECARD                                             */
         /* ========================================================================= */
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm max-w-4xl mx-auto space-y-6 transition-colors">
               
               {/* Scorecard Header */}
-              <div className="text-center border-b border-slate-100 pb-6 space-y-2">
-                <div className="w-14 h-14 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+              <div className="text-center border-b border-slate-100 dark:border-slate-800 pb-6 space-y-2">
+                <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/40 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
                   <Award className="w-7 h-7"/>
                 </div>
-                <h2 className="text-lg font-black text-slate-900">Placement Mock Interview Results</h2>
-                <p className="text-xs text-slate-500">Aggregate scorecard compiled based on terms accuracy and communication relevance.</p>
+                <h2 className="text-lg font-black text-slate-900 dark:text-white">Placement Mock Interview Results</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Aggregate scorecard compiled based on terms accuracy and communication relevance.</p>
               </div>
 
               {/* Total Aggregate Score widget & Sentiment Tone metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 p-6 rounded-3xl border border-slate-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 dark:bg-slate-950/50 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800">
                 <div className="text-center space-y-1.5">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Overall score</span>
                   <div className="text-4xl font-black font-mono text-purple-600">{getOverallReadinessScore()}%</div>
@@ -844,9 +844,9 @@ export default function InterviewCoachPage() {
                   </div>
                 </div>
 
-                <div className="md:col-span-2 space-y-3 text-xs text-slate-600 border-t md:border-t-0 md:border-l border-slate-200/80 pt-4 md:pt-0 md:pl-6 leading-relaxed">
-                  <span className="font-bold text-slate-800 block">AI Technical Recruiter Summary:</span>
-                  <p className="text-slate-500 text-[11px]">
+                <div className="md:col-span-2 space-y-3 text-xs text-slate-600 dark:text-slate-300 border-t md:border-t-0 md:border-l border-slate-200/80 dark:border-slate-800 pt-4 md:pt-0 md:pl-6 leading-relaxed">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 block">AI Technical Recruiter Summary:</span>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px]">
                     {getOverallReadinessScore() >= 75
                 ? `Outstanding performance. Your communication sentiment was mapped as primarily "${getPrimaryInterviewMood()}". Your technical vocabulary matched standard production workflows. You showed strong understanding of key database schemas, application components, and scale requirements.`
                 : `Good attempt. Your communication sentiment was mapped as primarily "${getPrimaryInterviewMood()}". Your baseline terminology shows familiarity, but you can strengthen your feedback answers by explicitly discussing edge cases, memory implications, or caching mechanisms.`}
@@ -856,12 +856,12 @@ export default function InterviewCoachPage() {
 
               {/* Detailed Breakdown for each question */}
               <div className="space-y-4">
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Question-by-Question Review</h3>
+                <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Question-by-Question Review</h3>
                 
                 <div className="space-y-4">
                   {answersFeedback.map((feedback, idx) => {
                 const isModelAnswerVisible = !!showModelAnswerMap[idx];
-                return (<div key={idx} className="p-5 rounded-2xl border border-slate-200 space-y-3.5">
+                return (<div key={idx} className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 space-y-3.5 transition-colors">
                         
                         <div className="flex justify-between items-start gap-4">
                           <div className="space-y-1">
@@ -871,11 +871,11 @@ export default function InterviewCoachPage() {
                                 Tone: {feedback.mood}
                               </span>
                             </div>
-                            <span className="font-bold text-slate-900 text-xs sm:text-sm block leading-snug">{feedback.question}</span>
+                            <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm block leading-snug">{feedback.question}</span>
                           </div>
                           
                           <div className="flex items-center gap-2 shrink-0">
-                            <button onClick={() => toggleModelAnswer(idx)} className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[9px] text-slate-600 font-bold transition-colors flex items-center gap-1" title="Toggle best possible reply answer">
+                            <button onClick={() => toggleModelAnswer(idx)} className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[9px] text-slate-600 dark:text-slate-300 font-bold transition-colors flex items-center gap-1" title="Toggle best possible reply answer">
                               <Eye className="w-3 h-3"/> {isModelAnswerVisible ? 'Hide Best Reply' : 'Show Best Reply'}
                             </button>
                             
@@ -890,17 +890,17 @@ export default function InterviewCoachPage() {
                         </div>
 
                         {/* Speech Transcript */}
-                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] font-mono text-slate-500 leading-normal">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200/80 dark:border-slate-800 text-[11px] font-mono text-slate-500 dark:text-slate-400 leading-normal">
                           <span className="text-[9px] font-black text-slate-400 block mb-1">Your Speech Answer:</span>
-                          <p className="italic text-slate-700">"{feedback.answer}"</p>
+                          <p className="italic text-slate-700 dark:text-slate-300">"{feedback.answer}"</p>
                         </div>
 
                         {/* Model Answer (Best Reply) Expandable Container */}
-                        {isModelAnswerVisible && (<div className="p-3.5 rounded-xl bg-purple-50/40 border border-purple-100 text-[11px] leading-relaxed space-y-1.5 animate-in slide-in-from-top-2 duration-200">
+                        {isModelAnswerVisible && (<div className="p-3.5 rounded-xl bg-purple-50/40 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-800/40 text-[11px] leading-relaxed space-y-1.5 animate-in slide-in-from-top-2 duration-200">
                             <span className="font-black text-purple-800 flex items-center gap-1 text-[9px] uppercase tracking-wider">
                               <Sparkles className="w-3.5 h-3.5 text-purple-600"/> Best Possible Reply (Ideal Model Answer):
                             </span>
-                            <p className="text-slate-700 font-sans font-semibold">{feedback.modelAnswer}</p>
+                            <p className="text-slate-700 dark:text-slate-300 font-sans font-semibold">{feedback.modelAnswer}</p>
                           </div>)}
 
                         <div className="space-y-2 text-xs">
@@ -912,8 +912,8 @@ export default function InterviewCoachPage() {
                             </div>)}
 
                           <div className="text-slate-600 text-[11px]">
-                            <span className="font-bold text-slate-800 block">Evaluation Feedback:</span>
-                            <p className="leading-relaxed text-slate-500">{feedback.feedback}</p>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 block">Evaluation Feedback:</span>
+                            <p className="leading-relaxed text-slate-500 dark:text-slate-400">{feedback.feedback}</p>
                           </div>
                         </div>
 
@@ -923,8 +923,8 @@ export default function InterviewCoachPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-6">
-                <button onClick={handleReset} className="px-6 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5">
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-6">
+                <button onClick={handleReset} className="px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5">
                   <RotateCcw className="w-3.5 h-3.5"/> Start New Interview
                 </button>
               </div>
