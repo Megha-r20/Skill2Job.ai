@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
-import { sendEmailOtp, sendSmsOtp } from '@/lib/otpService';
+import { sendEmailOtp, sendSmsOtp, otpRepository } from '@/lib/otpService';
 export async function POST(request) {
     try {
         const body = await request.json();
@@ -14,8 +14,15 @@ export async function POST(request) {
         }
         const isEmail = identifier.includes('@');
         const channelType = isEmail ? 'email' : 'phone';
-        // Generate 6-digit OTP code
+        // Generate 6-digit OTP code & Store in OtpRecord
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        await otpRepository.createOtpRecord({
+            identifier: (user.email || identifier).trim().toLowerCase(),
+            type: channelType,
+            purpose: 'forgot_password',
+            plainOtp: otpCode,
+            expiresInMinutes: 5
+        });
         const maskedIdentifier = isEmail
             ? `${identifier.substring(0, 2)}***${identifier.substring(identifier.indexOf('@'))}`
             : `${identifier.substring(0, 3)}****${identifier.substring(identifier.length - 2)}`;

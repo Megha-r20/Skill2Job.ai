@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { userRepository } from '@/lib/repositories/userRepository';
+import { otpRepository } from '@/lib/repositories/otpRepository';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
 export async function POST(request) {
     try {
@@ -10,10 +11,15 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Identifier and 6-digit verification code are required.' }, { status: 400 });
         }
         const cleanIdentifier = identifier.trim().toLowerCase();
-        // In a real implementation we would look up OTP from Prisma
-        // For now we just verify any code if it equals '123456' for testing, or assume verified
-        if (code.trim() !== '123456') {
-            // throw new Error('Invalid OTP'); // Uncomment in strict mode
+        
+        const otpResult = await otpRepository.verifyOtp({
+            identifier: cleanIdentifier,
+            code: code.trim(),
+            purpose
+        });
+        if (!otpResult.success) {
+            logSecurityEvent('OTP_VERIFIED_FAILED', { identifier: cleanIdentifier, error: otpResult.error });
+            return NextResponse.json({ error: otpResult.error || 'Invalid or expired verification code.' }, { status: 400 });
         }
         let user = null;
         try {

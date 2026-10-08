@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
-import { sendEmailOtp, sendSmsOtp } from '@/lib/otpService';
+import { sendEmailOtp, sendSmsOtp, otpRepository } from '@/lib/otpService';
 export async function POST(request) {
     try {
         const body = await request.json();
@@ -8,27 +8,36 @@ export async function POST(request) {
         if (!identifier || typeof identifier !== 'string') {
             return NextResponse.json({ error: 'Valid email address or phone number is required.' }, { status: 400 });
         }
-        const channelType = type || (identifier.includes('@') ? 'email' : 'phone');
+        const cleanIdentifier = identifier.trim().toLowerCase();
+        const channelType = type || (cleanIdentifier.includes('@') ? 'email' : 'phone');
         // 1. Duplicate Account Prevention for Registration
         if (purpose === 'registration') {
             if (channelType === 'email') {
-                const existing = await userRepository.findByEmail(identifier.trim());
+                const existing = await userRepository.findByEmail(cleanIdentifier);
                 if (existing && existing.email_verified && existing.verification_status === 'VERIFIED') {
                     return NextResponse.json({ error: 'This email is already registered and verified. Please login instead.' }, { status: 409 });
                 }
             }
             else {
-                const existing = await userRepository.findByPhone(identifier.trim());
+                const existing = await userRepository.findByPhone(cleanIdentifier);
                 if (existing && existing.phone_verified && existing.verification_status === 'VERIFIED') {
                     return NextResponse.json({ error: 'This phone number is already registered and verified. Please login instead.' }, { status: 409 });
                 }
             }
         }
-        // 2. Generate Brand New Secure 6-Digit OTP
+        // 2. Generate Brand New Secure 6-Digit OTP & Store in OtpRecord
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        await otpRepository.createOtpRecord({
+            identifier: cleanIdentifier,
+            type: channelType,
+            purpose,
+            plainOtp: otpCode,
+            expiresInMinutes: 5
+        });
+
         const maskedIdentifier = channelType === 'email'
-            ? `${identifier.substring(0, 2)}***${identifier.substring(identifier.indexOf('@'))}`
-            : `${identifier.substring(0, 3)}****${identifier.substring(identifier.length - 2)}`;
+            ? `${cleanIdentifier.substring(0, 2)}***${cleanIdentifier.substring(cleanIdentifier.indexOf('@'))}`
+            : `${cleanIdentifier.substring(0, 3)}****${cleanIdentifier.substring(cleanIdentifier.length - 2)}`;
         // 3. Dispatch via Email or SMS Provider
         let dispatchResult;
         try {

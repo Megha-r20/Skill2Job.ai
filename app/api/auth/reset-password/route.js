@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
+import { otpRepository } from '@/lib/repositories/otpRepository';
 export async function POST(request) {
     try {
         const body = await request.json();
@@ -12,6 +13,15 @@ export async function POST(request) {
         }
         if (confirmPassword && newPassword !== confirmPassword) {
             return NextResponse.json({ error: 'Passwords do not match.' }, { status: 400 });
+        }
+        // Verify OTP code
+        const otpResult = await otpRepository.verifyOtp({
+            identifier: identifier.trim().toLowerCase(),
+            code: code.trim(),
+            purpose: 'forgot_password'
+        });
+        if (!otpResult.success) {
+            return NextResponse.json({ error: otpResult.error || 'Invalid or expired verification code.' }, { status: 400 });
         }
         // Reset password using userRepository
         const updatedUser = await userRepository.resetPassword(identifier, newPassword);

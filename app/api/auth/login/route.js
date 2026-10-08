@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
+import { otpRepository } from '@/lib/repositories/otpRepository';
 import { signSessionToken, logSecurityEvent, getAuthenticatedSession } from '@/lib/authMiddleware';
 import { loginSchema } from '@/lib/validations';
 import { checkRateLimit, rateLimitExceededResponse } from '@/lib/rateLimit';
@@ -78,13 +79,14 @@ export async function POST(request) {
 
             // Verify OTP or Password
             if (otp) {
-                try {
-                    if (otp.trim() !== '123456')
-                        throw new Error('Invalid OTP');
-                }
-                catch (otpErr) {
-                    logSecurityEvent('LOGIN_OTP_FAILED', { identifier: searchKey, error: otpErr.message });
-                    return NextResponse.json({ error: otpErr.message || 'Invalid or expired OTP code.' }, { status: 401 });
+                const otpResult = await otpRepository.verifyOtp({
+                    identifier: searchKey,
+                    code: otp.trim(),
+                    purpose: 'login'
+                });
+                if (!otpResult.success) {
+                    logSecurityEvent('LOGIN_OTP_FAILED', { identifier: searchKey, error: otpResult.error });
+                    return NextResponse.json({ error: otpResult.error || 'Invalid or expired OTP code.' }, { status: 401 });
                 }
             }
             else if (password) {

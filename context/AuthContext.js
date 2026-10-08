@@ -103,7 +103,7 @@ export function AuthProvider({ children }) {
         setIsLoading(true);
         try {
             const payload = isOtp
-                ? { identifier, otp: passwordOrOtp || '123456' }
+                ? { identifier, otp: passwordOrOtp }
                 : { identifier, password: passwordOrOtp || 'demo123' };
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
