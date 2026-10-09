@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "node scripts/seed.mjs",
-    "test": "node --test tests/ai.test.mjs tests/verification.test.mjs tests/coding-sandbox.test.mjs tests/file-validation.test.mjs tests/auth-security.test.mjs tests/otp-security.test.mjs && node scripts/sanity.test.mjs",
+    "test": "node --test tests/ai.test.mjs tests/verification.test.mjs tests/coding-sandbox.test.mjs tests/file-validation.test.mjs tests/auth-security.test.mjs tests/otp-security.test.mjs tests/resume-tools.test.mjs && node scripts/sanity.test.mjs",
     "test:sanity": "node scripts/sanity.test.mjs"
   },
   "dependencies": {
