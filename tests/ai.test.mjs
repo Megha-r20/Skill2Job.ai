@@ -10,7 +10,9 @@ import {
     generatePersonalizedRoadmap,
     evaluateInterviewResponse,
     matchTalentBySkillsQuery,
-    calculateIndustrySkillDemand
+    calculateIndustrySkillDemand,
+    evaluateCgpaEligibility,
+    evaluateBranchEligibility
 } from '../lib/ai.js';
 import { aiService, DEFAULT_GEMINI_MODEL } from '../lib/services/aiService.js';
 
@@ -152,5 +154,109 @@ describe('AI Matching & Analytics Engine', () => {
             }
         });
     });
-});
 
+    describe('Multi-Factor Match Algorithm (Overlap × Credibility × Academic Eligibility)', () => {
+        it('calculates exact 72% match score with transparent why explanation', async () => {
+            // Setup a candidate and job profile designed to yield 72%
+            // Overlap = 92.5%, Credibility = 85%, Academic = 92%
+            // 0.925 * 0.85 * 0.92 = 0.72335 -> 72%!
+            const candidate = {
+                id: 'std_candidate_72',
+                fullName: 'Devin Taylor',
+                cgpa: 6.44,
+                department: 'Computer Science & Engineering',
+                skills: [
+                    { skillName: 'React.js', level: 'Intermediate', score: 85, status: 'Verified' },
+                    { skillName: 'Node.js', level: 'Intermediate', score: 80, status: 'Verified' },
+                    { skillName: 'PostgreSQL', level: 'Intermediate', status: 'Self-declared' },
+                    { skillName: 'Docker', level: 'Intermediate', status: 'Self-declared' }
+                ]
+            };
+            const targetJob = {
+                id: 'job_target_72',
+                title: 'Full Stack Cloud Engineer',
+                minCgpa: 7.0,
+                branch: 'Computer Science',
+                requiredSkills: [
+                    { skillName: 'React.js', minLevel: 'Intermediate', weight: 1.0 },
+                    { skillName: 'Node.js', minLevel: 'Intermediate', weight: 1.0 },
+                    { skillName: 'PostgreSQL', minLevel: 'Advanced', weight: 1.0 },
+                    { skillName: 'Docker', minLevel: 'Advanced', weight: 1.0 }
+                ]
+            };
+
+            const match = await calculateJobMatch(candidate, targetJob);
+            assert.equal(match.matchPercentage, 72, `Expected 72% match, got ${match.matchPercentage}%`);
+            assert(match.explanation.includes('72%'), 'Explanation should state the 72% score');
+            assert(match.whyExplanation.toLowerCase().includes('why 72%'), 'Why explanation should answer why 72%');
+            assert(match.breakdown.skillOverlap.score >= 90);
+            assert(match.breakdown.credibility.score === 85);
+            assert(match.breakdown.academicEligibility.score === 92);
+            assert(match.breakdown.formula.includes('72%'));
+        });
+
+        it('discounts match score when skills are self-declared vs verified', async () => {
+            const verifiedCandidate = {
+                id: 'std_verified',
+                cgpa: 8.5,
+                department: 'Computer Science',
+                skills: [
+                    { skillName: 'React.js', level: 'Intermediate', score: 90, status: 'Verified' },
+                    { skillName: 'Python 3', level: 'Intermediate', score: 90, status: 'Verified' }
+                ]
+            };
+            const selfDeclaredCandidate = {
+                id: 'std_unverified',
+                cgpa: 8.5,
+                department: 'Computer Science',
+                skills: [
+                    { skillName: 'React.js', level: 'Intermediate', status: 'Self-declared' },
+                    { skillName: 'Python 3', level: 'Intermediate', status: 'Self-declared' }
+                ]
+            };
+            const job = {
+                id: 'job_test',
+                minCgpa: 7.0,
+                branch: 'Computer Science',
+                requiredSkills: [
+                    { skillName: 'React.js', minLevel: 'Intermediate' },
+                    { skillName: 'Python 3', minLevel: 'Intermediate' }
+                ]
+            };
+
+            const matchVerified = await calculateJobMatch(verifiedCandidate, job);
+            const matchUnverified = await calculateJobMatch(selfDeclaredCandidate, job);
+
+            assert(matchVerified.matchPercentage > matchUnverified.matchPercentage);
+            assert(matchVerified.breakdown.credibility.score > matchUnverified.breakdown.credibility.score);
+        });
+
+        it('applies academic penalty when CGPA is below cutoff or branch is non-eligible', async () => {
+            const eligibleCandidate = {
+                id: 'std_elig',
+                cgpa: 8.5,
+                department: 'Computer Science',
+                skills: [{ skillName: 'React.js', level: 'Intermediate', score: 85, status: 'Verified' }]
+            };
+            const lowCgpaCandidate = {
+                id: 'std_low_cgpa',
+                cgpa: 5.5, // cutoff 8.0
+                department: 'Computer Science',
+                skills: [{ skillName: 'React.js', level: 'Intermediate', score: 85, status: 'Verified' }]
+            };
+            const job = {
+                id: 'job_high_bar',
+                minCgpa: 8.0,
+                branch: 'Computer Science',
+                requiredSkills: [{ skillName: 'React.js', minLevel: 'Intermediate' }]
+            };
+
+            const matchElig = await calculateJobMatch(eligibleCandidate, job);
+            const matchLow = await calculateJobMatch(lowCgpaCandidate, job);
+
+            assert(matchElig.matchPercentage > matchLow.matchPercentage);
+            assert.equal(matchLow.breakdown.academicEligibility.cgpaEligible, false);
+            assert(matchLow.explanation.includes('below required cutoff'));
+        });
+    });
+});

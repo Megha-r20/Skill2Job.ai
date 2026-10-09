@@ -294,6 +294,17 @@ export default function JobDetailPage() {
                 <div className="flex justify-center py-2">
                   <ReadinessGauge score={matchScore} size="lg" title="Match Score"/>
                 </div>
+                {matchAnalysis?.whyExplanation && (
+                  <div className="mt-2 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-1.5">
+                    <div className="font-black text-slate-900 flex items-center gap-1.5">
+                      <span className="text-primary-600">💡</span>
+                      <span>Why {matchScore}%?</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed text-[11px]">
+                      {matchAnalysis.whyExplanation}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Skills Checklist (Section 6) */}
