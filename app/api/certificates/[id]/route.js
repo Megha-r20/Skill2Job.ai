@@ -1,22 +1,30 @@
 import { NextResponse } from 'next/server';
+import { certificateRepository } from '@/lib/repositories/certificateRepository';
+
 export async function GET(request, { params }) {
     try {
         const certId = params.id;
+        const cert = await certificateRepository.findByCertificateNumber(certId);
+
+        if (!cert) {
+            return NextResponse.json({
+                success: false,
+                error: `Certificate with reference "${certId}" was not found in the official registry.`
+            }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+        }
+
+        const isAuthentic = certificateRepository.verifySignature(cert);
+
         return NextResponse.json({
             success: true,
             certificate: {
-                id: certId,
-                certificateNumber: certId,
-                studentName: 'Alex Rivera',
-                skillOrCourseName: certId.includes('PY') ? 'Python Fundamentals & OOP' : certId.includes('DSA') ? 'Data Structures & Algorithms' : certId.includes('SQL') ? 'SQL Relational Queries & Database Architecture' : 'Software Engineering Professional',
-                type: 'skill',
-                level: 'Intermediate',
-                score: 88,
-                issuedDate: '2026-08-25',
-                verificationUrl: `/verify/${certId}`,
-                isValid: true
+                ...cert,
+                isAuthentic,
+                tamperProofGuarantee: isAuthentic 
+                    ? 'Cryptographic HMAC-SHA256 digital signature verified against central keystore.'
+                    : 'SIGNATURE_MISMATCH: Potential credential modification detected.'
             }
-        });
+        }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
     catch (error) {
         return NextResponse.json({ error: error.message }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });

@@ -20,6 +20,13 @@ export default function StudentSkillsPage() {
     const [newLevel, setNewLevel] = useState('Beginner');
     const [submitting, setSubmitting] = useState(false);
     const [copied, setCopied] = useState(false);
+    // Profile Import States
+    const [githubModalOpen, setGithubModalOpen] = useState(false);
+    const [leetcodeModalOpen, setLeetcodeModalOpen] = useState(false);
+    const [githubUser, setGithubUser] = useState('');
+    const [leetcodeUser, setLeetcodeUser] = useState('');
+    const [importLoading, setImportLoading] = useState(false);
+    const [importNotification, setImportNotification] = useState('');
 
     const loadSkills = async () => {
         try {
@@ -75,6 +82,64 @@ export default function StudentSkillsPage() {
         }
     };
 
+    const handleImportGithubSubmit = async (e) => {
+        e.preventDefault();
+        if (!githubUser.trim()) return;
+        setImportLoading(true);
+        try {
+            const res = await fetch(`/api/students/${studentId}/import/github`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: githubUser.trim() })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setImportNotification(data.message || 'GitHub repositories successfully validated and imported!');
+                setGithubModalOpen(false);
+                setGithubUser('');
+                await loadSkills();
+                await refreshProfile();
+                setTimeout(() => setImportNotification(''), 5000);
+            } else {
+                alert(data.error || 'Failed to import GitHub profile.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error connecting to GitHub verification service.');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
+    const handleImportLeetcodeSubmit = async (e) => {
+        e.preventDefault();
+        if (!leetcodeUser.trim()) return;
+        setImportLoading(true);
+        try {
+            const res = await fetch(`/api/students/${studentId}/import/leetcode`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: leetcodeUser.trim() })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setImportNotification(data.message || 'LeetCode problem-solving activity verified!');
+                setLeetcodeModalOpen(false);
+                setLeetcodeUser('');
+                await loadSkills();
+                await refreshProfile();
+                setTimeout(() => setImportNotification(''), 5000);
+            } else {
+                alert(data.error || 'Failed to import LeetCode profile.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error connecting to LeetCode verification service.');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
     const handleCopyPassportLink = () => {
         navigator.clipboard.writeText(window.location.href);
         setCopied(true);
@@ -103,11 +168,23 @@ export default function StudentSkillsPage() {
 
                         <div className="flex flex-wrap items-center gap-3">
                             <button
+                                onClick={() => setGithubModalOpen(true)}
+                                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-white flex items-center gap-1.5 transition-colors shadow-sm"
+                            >
+                                <span>🐙 Import GitHub</span>
+                            </button>
+                            <button
+                                onClick={() => setLeetcodeModalOpen(true)}
+                                className="px-4 py-2.5 rounded-xl bg-amber-600/30 hover:bg-amber-600/40 border border-amber-500/40 text-xs font-bold text-amber-200 flex items-center gap-1.5 transition-colors shadow-sm"
+                            >
+                                <span>⚡ Import LeetCode</span>
+                            </button>
+                            <button
                                 onClick={() => setModalOpen(true)}
                                 className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 transition-colors"
                             >
                                 <Plus className="w-4 h-4" />
-                                <span>Add Self-Declared Skill</span>
+                                <span>Add Skill</span>
                             </button>
                             
                             <button
@@ -328,7 +405,99 @@ export default function StudentSkillsPage() {
             </div>
 
             {/* ADD SELF-DECLARED SKILL MODAL */}
-            {modalOpen && (
+            
+            {/* GITHUB IMPORT MODAL */}
+            {githubModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <span>🐙 Import GitHub Repositories</span>
+                            </h3>
+                            <button onClick={() => setGithubModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg">✕</button>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Enter your public GitHub username. We will scan your public repositories, commits, and languages to automatically issue verified skill badges.
+                        </p>
+                        <form onSubmit={handleImportGithubSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">GitHub Username</label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="e.g. octocat, torvalds, student-dev"
+                                    value={githubUser}
+                                    onChange={(e) => setGithubUser(e.target.value)}
+                                    className="w-full px-3.5 py-2 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                                />
+                            </div>
+                            <div className="pt-2 flex items-center justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setGithubModalOpen(false)}
+                                    className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={importLoading}
+                                    className="px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-md transition-colors"
+                                >
+                                    {importLoading ? 'Scanning Repos...' : 'Import & Verify Skills'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* LEETCODE IMPORT MODAL */}
+            {leetcodeModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <span>⚡ Import LeetCode Stats</span>
+                            </h3>
+                            <button onClick={() => setLeetcodeModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg">✕</button>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                            Enter your LeetCode username. We verify your solved problem counts across Easy, Medium, and Hard tiers to benchmark algorithmic competence.
+                        </p>
+                        <form onSubmit={handleImportLeetcodeSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">LeetCode Handle</label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="e.g. neetcode, algomaster"
+                                    value={leetcodeUser}
+                                    onChange={(e) => setLeetcodeUser(e.target.value)}
+                                    className="w-full px-3.5 py-2 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                                />
+                            </div>
+                            <div className="pt-2 flex items-center justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setLeetcodeModalOpen(false)}
+                                    className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={importLoading}
+                                    className="px-5 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 rounded-xl shadow-md transition-colors"
+                                >
+                                    {importLoading ? 'Verifying Stats...' : 'Verify LeetCode Mastery'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+{modalOpen && (
                 <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150">
                         <div className="flex items-center justify-between">
