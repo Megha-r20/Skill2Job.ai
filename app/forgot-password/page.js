@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Skill2HireLogo from '@/components/Skill2HireLogo';
+import Skill2JobLogo from '@/components/Skill2JobLogo';
 import { Lock, Mail, ArrowRight, KeyRound, AlertCircle, CheckCircle2, Clock, RefreshCw, Eye, EyeOff } from 'lucide-react';
 export default function ForgotPasswordPage() {
     const router = useRouter();
@@ -147,7 +147,7 @@ export default function ForgotPasswordPage() {
         {/* Header */}
         <div className="text-center space-y-2">
           <Link href="/" className="inline-block">
-            <Skill2HireLogo variant="full" size="md" showTagline={true}/>
+            <Skill2JobLogo variant="full" size="md" showTagline={true}/>
           </Link>
 
           <h1 className="text-2xl font-black text-slate-900 tracking-tight pt-2">

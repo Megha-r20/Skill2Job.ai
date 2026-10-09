@@ -231,7 +231,7 @@ export default function Navbar() {
           <div className="pt-2 border-t border-slate-100">
             <Link href="/differentiation" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-primary-700 bg-primary-50">
               <Sparkles className="w-4 h-4 text-primary-600"/>
-              <span>How Skill2Hire is Different →</span>
+              <span>How Skill2Job.ai is Different →</span>
             </Link>
           </div>
         </div>)}

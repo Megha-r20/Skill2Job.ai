@@ -6,7 +6,7 @@ export function ThemeProvider({ children }) {
     const [resolvedTheme, setResolvedTheme] = useState('dark');
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
-        const saved = localStorage.getItem('skill2hire-theme');
+        const saved = localStorage.getItem('skill2job-theme') || localStorage.getItem('skill2hire-theme');
         if (saved && (saved === 'light' || saved === 'dark' || saved === 'system')) {
             setThemeState(saved);
         }
@@ -49,7 +49,7 @@ export function ThemeProvider({ children }) {
     }, [theme, mounted]);
     const setTheme = (newTheme) => {
         setThemeState(newTheme);
-        localStorage.setItem('skill2hire-theme', newTheme);
+        localStorage.setItem('skill2job-theme', newTheme);
     };
     const toggleTheme = () => {
         const next = resolvedTheme === 'dark' ? 'light' : 'dark';

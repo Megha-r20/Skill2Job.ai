@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 
-export function Skill2HireSymbol({ size = 'md', role, className = '' }) {
+export function Skill2JobSymbol({ size = 'md', role, className = '' }) {
     const sizeMap = {
         xs: 'w-6 h-6 rounded-md',
         sm: 'w-8 h-8 rounded-lg',
@@ -13,12 +13,14 @@ export function Skill2HireSymbol({ size = 'md', role, className = '' }) {
     };
     return (
         <div className={`relative inline-flex items-center justify-center shrink-0 overflow-hidden shadow-md ${sizeMap[size]} ${className}`}>
-            <img src="/logo-app-icon.png" alt="Skill2Hire Official App Icon" className="w-full h-full object-cover" />
+            <img src="/logo-app-icon.png" alt="Skill2Job.ai Official App Icon" className="w-full h-full object-cover" />
         </div>
     );
 }
 
-export default function Skill2HireLogo({ variant = 'full', theme = 'light', size = 'md', role, showTagline = true, className = '' }) {
+export const Skill2HireSymbol = Skill2JobSymbol;
+
+export default function Skill2JobLogo({ variant = 'full', theme = 'light', size = 'md', role, showTagline = true, className = '' }) {
     const isDark = theme === 'dark' || theme === 'white';
     // Sizing maps
     const iconSizeMap = {
@@ -63,7 +65,7 @@ export default function Skill2HireLogo({ variant = 'full', theme = 'light', size
 
     // Standalone Icon
     if (variant === 'icon' || variant === 'badge') {
-        return <Skill2HireSymbol size={size} role={role} className={className} />;
+        return <Skill2JobSymbol size={size} role={role} className={className} />;
     }
 
     // Hero Stacked View
@@ -71,7 +73,7 @@ export default function Skill2HireLogo({ variant = 'full', theme = 'light', size
         return (
             <div className={`inline-flex flex-col items-center justify-center text-center space-y-3 ${className}`}>
                 <div className={`overflow-hidden shadow-2xl ${iconSizeMap[size]}`}>
-                    <img src="/logo-app-icon.png" alt="Skill2Hire Hero Mark" className="w-full h-full object-cover" />
+                    <img src="/logo-app-icon.png" alt="Skill2Job.ai Hero Mark" className="w-full h-full object-cover" />
                 </div>
             </div>
         );
@@ -82,7 +84,7 @@ export default function Skill2HireLogo({ variant = 'full', theme = 'light', size
         <div className={`inline-flex items-center gap-2.5 sm:gap-3 select-none ${className}`}>
             {/* Exact Squircle Icon */}
             <div className={`shrink-0 overflow-hidden shadow-md ${iconSizeMap[size]}`}>
-                <img src="/logo-app-icon.png" alt="Skill2Hire Icon" className="w-full h-full object-cover" />
+                <img src="/logo-app-icon.png" alt="Skill2Job.ai Icon" className="w-full h-full object-cover" />
             </div>
 
             {/* Wordmark + Dynamic Role Sub-label */}
@@ -95,7 +97,10 @@ export default function Skill2HireLogo({ variant = 'full', theme = 'light', size
                         2
                     </span>
                     <span className={`${currentText.text} font-black ${isDark ? 'text-cyan-300' : 'text-primary-600 dark:text-cyan-400'}`}>
-                        Hire
+                        Job
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-1 py-0.5 ml-1 rounded bg-gradient-to-r from-blue-600 to-cyan-500 text-white leading-none shadow-sm">
+                        .ai
                     </span>
                 </div>
 
@@ -115,3 +120,5 @@ export default function Skill2HireLogo({ variant = 'full', theme = 'light', size
         </div>
     );
 }
+
+export const Skill2HireLogo = Skill2JobLogo;

@@ -21,7 +21,7 @@ export async function POST(request) {
             return NextResponse.json({
                 success: false,
                 status: 'NOT_FOUND',
-                message: `Certificate "${certificateNumber}" is not registered in the Skill2Hire registry.`
+                message: `Certificate "${certificateNumber}" is not registered in the Skill2Job.ai registry.`
             }, { status: 404 });
         }
 

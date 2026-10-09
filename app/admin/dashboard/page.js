@@ -40,7 +40,7 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-500/20 text-primary-300 text-xs font-bold uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4 text-primary-400"/>
-              <span>Skill2Hire SuperAdmin Center</span>
+              <span>Skill2Job.ai SuperAdmin Center</span>
             </div>
             <h1 className="text-3xl font-black text-white tracking-tight">
               Ecosystem Governance & Global Analytics

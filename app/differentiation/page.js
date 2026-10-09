@@ -21,7 +21,7 @@ export default function DifferentiationPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-            Traditional portals only connect candidates to job postings. <strong>Skill2Hire</strong> is an 
+            Traditional portals only connect candidates to job postings. <strong>Skill2Job.ai</strong> is an 
             <strong> Education-to-Employment Intelligence Platform</strong> that bridges the gap between what companies require, what universities teach, and what students know.
           </p>
         </div>
@@ -58,11 +58,11 @@ export default function DifferentiationPage() {
                 </p>
               </div>
 
-              {/* Skill2Hire */}
+              {/* Skill2Job.ai */}
               <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/60 space-y-3 transition-colors">
                 <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-300 font-bold text-sm">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600"/>
-                  <span>Skill2Hire Education-to-Employment Intelligence</span>
+                  <span>Skill2Job.ai Education-to-Employment Intelligence</span>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                   1. Select target dream job.<br />
@@ -104,11 +104,11 @@ export default function DifferentiationPage() {
                 </p>
               </div>
 
-              {/* Skill2Hire */}
+              {/* Skill2Job.ai */}
               <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/60 space-y-3 transition-colors">
                 <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-300 font-bold text-sm">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600"/>
-                  <span>Skill2Hire Institutional Intelligence</span>
+                  <span>Skill2Job.ai Institutional Intelligence</span>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                   1. <strong>Industry Skill Heatmap</strong> tracks corporate demand vs student proficiency.<br />
@@ -150,11 +150,11 @@ export default function DifferentiationPage() {
                 </p>
               </div>
 
-              {/* Skill2Hire */}
+              {/* Skill2Job.ai */}
               <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800/60 space-y-3 transition-colors">
                 <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-300 font-bold text-sm">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600"/>
-                  <span>Skill2Hire Talent Intelligence Hub</span>
+                  <span>Skill2Job.ai Talent Intelligence Hub</span>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                   1. <strong>AI Skill Extractor</strong> parses exact required competencies & proficiency.<br />
@@ -176,7 +176,7 @@ export default function DifferentiationPage() {
               The Education-to-Employment Closed Loop
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              Every feature in Skill2Hire directly supports this continuous learning and hiring feedback loop:
+              Every feature in Skill2Job.ai directly supports this continuous learning and hiring feedback loop:
             </p>
           </div>
 

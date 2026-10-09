@@ -58,7 +58,7 @@ export default function CertificateVerifyPage({ params }) {
               <ShieldCheck className="w-6 h-6"/>
             </div>
             <div>
-              <span className="text-base font-extrabold text-slate-900 tracking-tight">Skill2Hire</span>
+              <span className="text-base font-extrabold text-slate-900 tracking-tight">Skill2Job.ai</span>
               <span className="block text-[10px] text-slate-400 font-medium -mt-0.5">Tamper-Proof Credential Registry</span>
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function CertificateVerifyPage({ params }) {
           </div>
           <div>
             <span className="text-slate-400 text-[10px] uppercase font-semibold block">Issuing Authority</span>
-            <span className="font-bold text-slate-800">Skill2Hire Council</span>
+            <span className="font-bold text-slate-800">Skill2Job.ai Council</span>
           </div>
           <div>
             <span className="text-slate-400 text-[10px] uppercase font-semibold block">Issue Date</span>

@@ -14,7 +14,7 @@ export default function AiAdvisorWidget() {
         {
             id: 'msg_init',
             sender: 'ai',
-            text: `Hello ${studentName}! I am your **Skill2Hire AI Career Advisor**. I analyze your verified skills, course milestones, and live job requirements in real-time. How can I help you become job-ready today?`,
+            text: `Hello ${studentName}! I am your **Skill2Job.ai Career Advisor**. I analyze your verified skills, course milestones, and live job requirements in real-time. How can I help you become job-ready today?`,
             time: 'Just now',
             actions: [
                 { label: 'Check My Readiness', href: '/student/academic-report' },
@@ -113,7 +113,7 @@ export default function AiAdvisorWidget() {
               </div>
               <div>
                 <div className="text-xs font-black flex items-center gap-1.5">
-                  <span>Skill2Hire AI Advisor</span>
+                  <span>Skill2Job.ai Advisor</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>
                 </div>
                 <div className="text-[10px] text-cyan-300 font-medium">Placement & Readiness Engine</div>

@@ -38,7 +38,7 @@ export default function GoogleSignInModal({ isOpen, onClose, onSelectAccount, is
           </div>
           <h3 className="text-xl font-black text-foreground tracking-tight">Sign in with Google</h3>
           <p className="text-xs text-muted-foreground font-medium">
-            Enter your Google / Gmail account to authenticate with Skill2Hire
+            Enter your Google / Gmail account to authenticate with Skill2Job.ai
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export default function GoogleSignInModal({ isOpen, onClose, onSelectAccount, is
           </div>
 
           <button type="submit" disabled={isLoading || !gmailAddress} className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-50 transition-all">
-            <span>{isLoading ? 'Verifying with Google...' : 'Continue to Skill2Hire'}</span>
+            <span>{isLoading ? 'Verifying with Google...' : 'Continue to Skill2Job.ai'}</span>
             <ArrowRight className="w-4 h-4"/>
           </button>
         </form>

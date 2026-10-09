@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { WifiOff, Wifi, RefreshCw, Cpu, Award, Compass, ArrowRight } from 'lucide-react';
-import Skill2HireLogo from '@/components/Skill2HireLogo';
+import Skill2JobLogo from '@/components/Skill2JobLogo';
 
 export default function OfflinePage() {
     const { t } = useLanguage();
@@ -43,7 +43,7 @@ export default function OfflinePage() {
             {/* Header */}
             <header className="flex items-center justify-between max-w-4xl mx-auto w-full z-10">
                 <Link href="/">
-                    <Skill2HireLogo variant="full" size="md" />
+                    <Skill2JobLogo variant="full" size="md" />
                 </Link>
 
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-bold">

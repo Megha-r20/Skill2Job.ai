@@ -59,7 +59,7 @@ export default function CoursesCatalogPage() {
                             Master High-Demand Tech Skills for Free
                         </h1>
                         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                            Zero external redirects. Learn directly inside Skill2Hire with interactive notes, runnable code examples, practice questions, and skill verification assessments.
+                            Zero external redirects. Learn directly inside Skill2Job.ai with interactive notes, runnable code examples, practice questions, and skill verification assessments.
                         </p>
                     </div>
 

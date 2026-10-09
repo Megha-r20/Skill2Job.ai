@@ -35,7 +35,7 @@ export default function CollegeIndustryDemandPage() {
             Industry Skill Demand Radar
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
-            Real-time percentage breakdown of technical skills demanded across 25+ verified corporate job postings on Skill2Hire.
+            Real-time percentage breakdown of technical skills demanded across 25+ verified corporate job postings on Skill2Job.ai.
           </p>
         </div>
 

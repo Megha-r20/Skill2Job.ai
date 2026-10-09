@@ -91,7 +91,7 @@ export default function CurriculumGapPage() {
                 Align University Syllabi with Real-Time Tech Hiring
               </h1>
               <p className="text-xs sm:text-sm text-slate-300">
-                Skill2Hire continuously compares your accredited university syllabus against active company hiring postings to detect syllabus blindspots before placement season starts.
+                Skill2Job.ai continuously compares your accredited university syllabus against active company hiring postings to detect syllabus blindspots before placement season starts.
               </p>
             </div>
 
@@ -115,7 +115,7 @@ export default function CurriculumGapPage() {
               <Sparkles className="w-4 h-4"/>
             </div>
             <p className="text-xs text-slate-200 leading-relaxed">
-              <strong>Skill2Hire AI Recommendation:</strong> “Based on current industry hiring demand, create a <span className="text-amber-300 font-bold">Python + DSA + SQL</span> placement training program to elevate cohort readiness from 62% to 90%+.”
+              <strong>Skill2Job.ai AI Recommendation:</strong> “Based on current industry hiring demand, create a <span className="text-amber-300 font-bold">Python + DSA + SQL</span> placement training program to elevate cohort readiness from 62% to 90%+.”
             </p>
           </div>
         </div>

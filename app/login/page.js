@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import Skill2HireLogo from '@/components/Skill2HireLogo';
+import Skill2JobLogo from '@/components/Skill2JobLogo';
 import GoogleSignInModal from '@/components/GoogleSignInModal';
 import { Lock, Mail, ArrowRight, Sparkles, GraduationCap, Building2, CheckCircle2, AlertCircle, KeyRound, Eye, EyeOff, Briefcase, Sun, Moon, ArrowLeft } from 'lucide-react';
 export default function LoginPage() {
@@ -16,7 +16,7 @@ export default function LoginPage() {
     // Active Role Tab
     const [selectedRole, setSelectedRole] = useState('student');
     // Credentials
-    const [identifier, setIdentifier] = useState('alex.rivera@student.skill2hire.com');
+    const [identifier, setIdentifier] = useState('alex.rivera@student.skill2job.ai');
     const [password, setPassword] = useState('demo123');
     const [showPassword, setShowPassword] = useState(false);
     // OTP Login Mode
@@ -32,7 +32,7 @@ export default function LoginPage() {
             role: 'student',
             title: 'Student Portal',
             subtitle: 'Candidate & Learner',
-            email: 'alex.rivera@student.skill2hire.com',
+            email: 'alex.rivera@student.skill2job.ai',
             password: 'demo123',
             icon: GraduationCap,
             color: 'from-cyan-500 to-blue-600',
@@ -199,7 +199,7 @@ export default function LoginPage() {
       <header className="w-full border-b border-border/80 dark:border-white/10 glass sticky top-0 z-40 px-4 sm:px-8 py-3.5">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <Skill2HireLogo variant="full" size="sm" theme={resolvedTheme}/>
+            <Skill2JobLogo variant="full" size="sm" theme={resolvedTheme}/>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -226,7 +226,7 @@ export default function LoginPage() {
         {/* Title */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground font-display">
-            Sign In to Your <span className="text-gradient-brand">Skill2Hire</span> Portal
+            Sign In to Your <span className="text-gradient-brand">Skill2Job.ai</span> Portal
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-medium max-w-lg mx-auto">
             Secure role-based authentication for Students, Colleges, and Enterprise Recruiters.
@@ -381,7 +381,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* New to Skill2Hire */}
+          {/* New to Skill2Job.ai */}
           <div className="text-center pt-2 border-t border-border space-y-2">
             <p className="text-xs text-muted-foreground">
               Don't have an account yet?{' '}

@@ -156,7 +156,7 @@ export default function StudentSkillsPage() {
                         <div className="space-y-2">
                             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold uppercase tracking-wider">
                                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                                <span>Official Skill2Hire Verified Passport</span>
+                                <span>Official Skill2Job.ai Verified Passport</span>
                             </div>
                             <h1 className="text-3xl font-black text-white tracking-tight">
                                 {student?.fullName || 'Alex Rivera'}’s Skill Passport
@@ -380,7 +380,7 @@ export default function StudentSkillsPage() {
                             >
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Skill2Hire Credential</span>
+                                        <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">Skill2Job.ai Credential</span>
                                         <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">{cert.certificateNumber}</span>
                                     </div>
                                     <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">{cert.skillOrCourseName}</h3>
@@ -506,7 +506,7 @@ export default function StudentSkillsPage() {
                         </div>
 
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Note: New skills are added as <strong>Self-Declared</strong>. You must complete a Skill2Hire assessment to earn the <strong>Verified ✓</strong> status badge.
+                            Note: New skills are added as <strong>Self-Declared</strong>. You must complete a Skill2Job.ai assessment to earn the <strong>Verified ✓</strong> status badge.
                         </p>
 
                         <form onSubmit={handleAddSkill} className="space-y-4">

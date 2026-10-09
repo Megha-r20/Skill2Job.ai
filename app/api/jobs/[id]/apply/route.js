@@ -62,7 +62,7 @@ export async function POST(request, { params }) {
             companyName: job.companyName,
             matchPercentage: matchData.matchPercentage,
             status: 'Applied',
-            notes: notes || 'Submitted via Skill2Hire verified talent pipeline',
+            notes: notes || 'Submitted via Skill2Job.ai verified talent pipeline',
             appliedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };

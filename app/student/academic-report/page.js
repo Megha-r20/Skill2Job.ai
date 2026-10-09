@@ -17,7 +17,7 @@ const FALLBACK_REPORT = {
     admissionYear: 2022,
     graduationYear: 2026,
     currentSemester: 6,
-    email: 'alex.rivera@student.skill2hire.com',
+    email: 'alex.rivera@student.skill2job.ai',
     cgpa: 8.85,
     totalCreditsEarned: 132,
     totalCreditsRequired: 160,
@@ -409,7 +409,7 @@ export default function StudentAcademicReportPage() {
                             <div>
                                 <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                                     <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                                    <span>Skill2Hire Industry Verification & Verified Credentials</span>
+                                    <span>Skill2Job.ai Industry Verification & Verified Credentials</span>
                                 </h3>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                     Skills verified through timed technical assessments and validated in the institutional passport.
@@ -450,7 +450,7 @@ export default function StudentAcademicReportPage() {
                         <div className="space-y-1 text-center sm:text-left">
                             <span className="font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider block">Registrar Verification Seal</span>
                             <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-sm">
-                                This academic transcript is digitally signed and cryptographically validated on the Skill2Hire Education-to-Employment platform.
+                                This academic transcript is digitally signed and cryptographically validated on the Skill2Job.ai Education-to-Employment platform.
                             </p>
                         </div>
 

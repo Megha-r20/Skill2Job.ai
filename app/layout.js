@@ -90,7 +90,7 @@ export default function RootLayout({ children, }) {
               (function() {
                 try {
                   // Theme initializer
-                  var saved = localStorage.getItem('skill2hire-theme');
+                  var saved = localStorage.getItem('skill2job-theme') || localStorage.getItem('skill2hire-theme');
                   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                   if (saved === 'dark' || (!saved && prefersDark)) {
                     document.documentElement.classList.add('dark');
@@ -101,7 +101,7 @@ export default function RootLayout({ children, }) {
                   }
 
                   // Language & Direction initializer
-                  var savedLang = localStorage.getItem('skill2hire_lang');
+                  var savedLang = localStorage.getItem('skill2job_lang') || localStorage.getItem('skill2hire_lang');
                   if (savedLang) {
                     document.documentElement.lang = savedLang;
                     if (savedLang === 'ar') {

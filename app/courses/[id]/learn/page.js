@@ -512,7 +512,7 @@ export default function CoursePlayerPage() {
           </Link>
           <div className="space-y-0.5">
             <h1 className="text-sm sm:text-base font-black text-white line-clamp-1">
-              {course?.title || 'Skill2Hire Video Course'}
+              {course?.title || 'Skill2Job.ai Video Course'}
             </h1>
             <div className="text-[11px] text-cyan-400 font-mono">
               Lesson {currentLessonIndex + 1} of {lessons.length || 1} • {currentLesson?.title}

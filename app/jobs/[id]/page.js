@@ -223,7 +223,7 @@ export default function JobDetailPage() {
               <div className="space-y-3 pt-2 border-t border-slate-100">
                 <h3 className="font-black text-sm text-slate-900 uppercase tracking-wider">About {jobData.companyName}:</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Leading technology partner recruiting campus talent through Skill2Hire verified skill passports and direct evaluation pipelines.
+                  Leading technology partner recruiting campus talent through Skill2Job.ai verified skill passports and direct evaluation pipelines.
                 </p>
                 <div className="flex items-center gap-4 text-xs font-bold text-slate-500">
                   <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5"/> 250-500 Employees</span>
@@ -366,9 +366,9 @@ export default function JobDetailPage() {
               <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto">
                 <ShieldCheck className="w-5 h-5"/>
               </div>
-              <h4 className="font-black text-sm text-cyan-300">Skill2Hire Zero-Fraud Guarantee</h4>
+              <h4 className="font-black text-sm text-cyan-300">Skill2Job.ai Zero-Fraud Guarantee</h4>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                When you apply, {jobData.companyName} receives your tamper-proof cryptographic skill scorecard verified directly by Skill2Hire.
+                When you apply, {jobData.companyName} receives your tamper-proof cryptographic skill scorecard verified directly by Skill2Job.ai.
               </p>
             </div>
 

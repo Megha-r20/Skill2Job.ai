@@ -20,7 +20,7 @@ export default function ResumeStudioPage() {
     const [resumeData, setResumeData] = useState({
         personalInfo: {
             fullName: 'Alex Rivera',
-            email: 'alex.rivera@student.skill2hire.com',
+            email: 'alex.rivera@student.skill2job.ai',
             phone: '+91 98765 43210',
             location: 'Bangalore, India',
             linkedin: 'https://linkedin.com/in/alex-rivera',
@@ -228,7 +228,7 @@ ${resumeData.certifications.map(c => `• ${c.skillName} (${c.level} — ${c.sco
                         <div className="space-y-2">
                             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-bold uppercase tracking-wider">
                                 <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-                                <span>Skill2Hire AI Career Studio</span>
+                                <span>Skill2Job.ai Career Studio</span>
                             </div>
                             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                                 ATS Resume Builder & Optimizer
@@ -341,7 +341,7 @@ ${resumeData.certifications.map(c => `• ${c.skillName} (${c.level} — ${c.sco
                                         <span>Verified Technical Skills</span>
                                     </h2>
                                     <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
-                                        Skill2Hire Passport Synced ✓
+                                        Skill2Job.ai Passport Synced ✓
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2 pt-1">

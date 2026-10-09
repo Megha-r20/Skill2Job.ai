@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Skill2HireLogo from '@/components/Skill2HireLogo';
+import Skill2JobLogo from '@/components/Skill2JobLogo';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import { Sparkles, ArrowRight, GraduationCap, Building2, Briefcase, BrainCircuit, Target, FileCheck2, TrendingUp, ShieldCheck, Zap, Users } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80 px-4 sm:px-8 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <Skill2HireLogo variant="full" size="md"/>
+            <Skill2JobLogo variant="full" size="md"/>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-300">

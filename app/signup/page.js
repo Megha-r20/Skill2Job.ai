@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import Skill2HireLogo from '@/components/Skill2HireLogo';
+import Skill2JobLogo from '@/components/Skill2JobLogo';
 import GoogleSignInModal from '@/components/GoogleSignInModal';
 import { GraduationCap, Building2, Briefcase, CheckCircle2, Lock, Mail, Phone, ArrowRight, Sparkles, AlertCircle, Eye, EyeOff, Sun, Moon, ArrowLeft, User, Code2 } from 'lucide-react';
 export default function SignupPage() {
@@ -39,7 +39,7 @@ function SignupContent() {
     const [graduationYear, setGraduationYear] = useState('2026');
     const [careerGoal, setCareerGoal] = useState('Full Stack Software Engineer');
     const [skillsInput, setSkillsInput] = useState('Python, Data Structures, SQL, Git');
-    const [resumeUrl, setResumeUrl] = useState('https://storage.skill2hire.com/resumes/alex_resume.pdf');
+    const [resumeUrl, setResumeUrl] = useState('https://storage.skill2job.ai/resumes/alex_resume.pdf');
     // College Profile
     const [website, setWebsite] = useState('https://apexuniversity.edu');
     const [address, setAddress] = useState('Academic City Campus, Tech Corridor');
@@ -170,7 +170,7 @@ function SignupContent() {
                     identifier: email.trim().toLowerCase(),
                     type: 'email',
                     purpose: 'registration',
-                    name: name || 'Skill2Hire User'
+                    name: name || 'Skill2Job.ai User'
                 })
             });
             const otpData = await otpRes.json();
@@ -299,7 +299,7 @@ function SignupContent() {
       <header className="relative w-full border-b border-border/80 dark:border-white/10 bg-card/60 backdrop-blur-md px-4 sm:px-8 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <Skill2HireLogo variant="full" size="sm" theme={resolvedTheme}/>
+            <Skill2JobLogo variant="full" size="sm" theme={resolvedTheme}/>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -723,7 +723,7 @@ function SignupContent() {
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8"/>
             </div>
-            <h2 className="text-2xl font-extrabold text-foreground">Welcome to Skill2Hire!</h2>
+            <h2 className="text-2xl font-extrabold text-foreground">Welcome to Skill2Job.ai!</h2>
             <p className="text-xs text-muted-foreground">
               Your account has been verified. Redirecting you to your dedicated dashboard...
             </p>

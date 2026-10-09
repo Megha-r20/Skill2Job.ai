@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
-import Skill2HireLogo from '@/components/Skill2HireLogo';
+import Skill2JobLogo from '@/components/Skill2JobLogo';
 import { ShieldCheck, LayoutDashboard, Briefcase, Zap, BookOpen, GraduationCap, Award, FileCheck2, Code2, Sparkles, Compass, FolderGit2, FileText, Send, Users, Flame, PlusCircle, Cpu, Layers, Building2, ChevronLeft, ChevronRight, LogOut, Settings, CheckCircle2, Search, Bell, ShieldAlert, Megaphone, Globe } from 'lucide-react';
 
 export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) {
@@ -210,7 +210,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                 {/* TOP BRANDING */}
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between min-h-[72px] gap-2">
                     <Link href="/" onClick={() => setIsMobileOpen(false)} className="flex items-center overflow-hidden min-w-0 group">
-                        <Skill2HireLogo variant={isCollapsed ? 'icon' : 'full'} size="md" role={currentRole} showTagline={!isCollapsed} />
+                        <Skill2JobLogo variant={isCollapsed ? 'icon' : 'full'} size="md" role={currentRole} showTagline={!isCollapsed} />
                     </Link>
 
                     {/* Desktop Collapse Button */}

@@ -158,7 +158,7 @@ export default function RecruiterDashboard() {
                   <Award className="w-5 h-5 text-emerald-600"/>
                   <span>Top Verified Candidates</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Pre-vetted through Skill2Hire assessments.</p>
+                <p className="text-xs text-slate-500 mt-0.5">Pre-vetted through Skill2Job.ai assessments.</p>
               </div>
               <Link href="/recruiter/candidates" className="text-xs font-bold text-primary-600 hover:underline">
                 Search All →

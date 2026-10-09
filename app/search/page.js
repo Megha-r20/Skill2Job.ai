@@ -69,7 +69,7 @@ function GlobalSearchContent() {
         <div className="bg-gradient-to-r from-slate-900 via-primary-950 to-indigo-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl text-center space-y-6">
           <div className="space-y-2 max-w-2xl mx-auto">
             <span className="px-3.5 py-1 rounded-full bg-primary-500/20 text-primary-300 text-xs font-bold uppercase tracking-wider border border-primary-500/30 inline-block">
-              Skill2Hire Universal Discovery
+              Skill2Job.ai Universal Discovery
             </span>
             <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
               {q ? (<>Results for <span className="text-cyan-400">"{q}"</span></>) : (<>Explore Jobs, Skills & Learning</>)}

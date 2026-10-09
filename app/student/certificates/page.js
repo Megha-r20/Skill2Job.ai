@@ -22,7 +22,7 @@ export default function StudentCertificatesPage() {
                         level: c.level || 'Intermediate',
                         score: c.score || 88,
                         issueDate: c.issuedDate || 'August 24, 2026',
-                        issuer: 'Skill2Hire Technical Assessment Board',
+                        issuer: 'Skill2Job.ai Technical Assessment Board',
                         verificationCode: c.certificateNumber || `S2H-${c.id}`,
                         verificationUrl: c.verificationUrl || `/verify/${c.certificateNumber || c.id}`,
                         status: 'Valid Certificate ✓'
@@ -39,7 +39,7 @@ export default function StudentCertificatesPage() {
                             level: 'Advanced',
                             score: 88,
                             issueDate: 'August 24, 2026',
-                            issuer: 'Skill2Hire Technical Assessment Board',
+                            issuer: 'Skill2Job.ai Technical Assessment Board',
                             verificationCode: 'S2H-PY-8892-VERIFIED',
                             verificationUrl: '/verify/cert_py_adv_2026',
                             status: 'Valid Certificate ✓'
@@ -51,7 +51,7 @@ export default function StudentCertificatesPage() {
                             level: 'Intermediate',
                             score: 92,
                             issueDate: 'August 21, 2026',
-                            issuer: 'Skill2Hire Technical Assessment Board',
+                            issuer: 'Skill2Job.ai Technical Assessment Board',
                             verificationCode: 'S2H-SQL-9214-VERIFIED',
                             verificationUrl: '/verify/cert_sql_adv_2026',
                             status: 'Valid Certificate ✓'
@@ -164,7 +164,7 @@ export default function StudentCertificatesPage() {
         <div className="space-y-1">
           <h4 className="text-xs font-black text-slate-900">100% Tamper-Proof Skill Credentials</h4>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Every Skill2Hire certificate is backed by a permanent verification ID and tamper-proof assessment scorecard. Employers scanning your QR code or checking the verification URL see the exact scoring breakdown and proctored timestamp.
+            Every Skill2Job.ai certificate is backed by a permanent verification ID and tamper-proof assessment scorecard. Employers scanning your QR code or checking the verification URL see the exact scoring breakdown and proctored timestamp.
           </p>
         </div>
       </div>

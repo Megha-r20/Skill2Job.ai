@@ -18,7 +18,7 @@ const ALL_CATALOG_PROJECTS = [
       'RESTful API dashboard displaying real-time throughput telemetry and worker health.'
     ],
     learningOutcomes: ['Distributed systems architecture', 'Concurrency controls', 'Database connection pooling'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/distributed-task-queue'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/distributed-task-queue'
   },
   {
     id: 'prec_2',
@@ -33,7 +33,7 @@ const ALL_CATALOG_PROJECTS = [
       'Interactive analytics dashboard showcasing cohort churn drivers.'
     ],
     learningOutcomes: ['Data wrangling at scale', 'Feature engineering', 'Business intelligence reporting'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/customer-churn-analytics'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/customer-churn-analytics'
   },
   {
     id: 'prec_3',
@@ -48,7 +48,7 @@ const ALL_CATALOG_PROJECTS = [
       'AWS infrastructure provisioning with IAM least-privilege security policies.'
     ],
     learningOutcomes: ['Container security', 'Cloud infrastructure automation', 'DevOps best practices'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/cloud-native-devops'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/cloud-native-devops'
   },
   {
     id: 'prec_4',
@@ -63,7 +63,7 @@ const ALL_CATALOG_PROJECTS = [
       'Conversational agent stream interface retaining chat session memory.'
     ],
     learningOutcomes: ['Retrieval-Augmented Generation concepts', 'Vector databases schema', 'Large language model prompting'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/ai-rag-chatbot'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/ai-rag-chatbot'
   },
   {
     id: 'prec_5',
@@ -78,7 +78,7 @@ const ALL_CATALOG_PROJECTS = [
       'Declarative state reconciliation loop matching active environment to Git repo changes.'
     ],
     learningOutcomes: ['Cluster deployment controls', 'Infrastructure GitOps concepts', 'System health automation'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/gitops-kubernetes'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/gitops-kubernetes'
   },
   {
     id: 'prec_6',
@@ -93,7 +93,7 @@ const ALL_CATALOG_PROJECTS = [
       'Interactive charts rendering historical analytics and expected returns forecasts.'
     ],
     learningOutcomes: ['Time-series math', 'Financial data structures', 'Exploratory metrics visualization'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/financial-analytics'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/financial-analytics'
   },
   {
     id: 'prec_7',
@@ -108,7 +108,7 @@ const ALL_CATALOG_PROJECTS = [
       'Simulated Stripe payment checkout flow validating card fields and showing confirmation.'
     ],
     learningOutcomes: ['Client state handling', 'Responsive CSS templates', 'Simulated API processing'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/react-storefront'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/react-storefront'
   },
   {
     id: 'prec_8',
@@ -123,7 +123,7 @@ const ALL_CATALOG_PROJECTS = [
       'Automated telemetry logging for successful and blocked validation audits.'
     ],
     learningOutcomes: ['API security structures', 'Redis cache key management', 'System rate limiting design'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/secure-otp-gateway'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/secure-otp-gateway'
   },
   {
     id: 'prec_9',
@@ -138,7 +138,7 @@ const ALL_CATALOG_PROJECTS = [
       'Dockerized orchestration mapping ports and environment variables cleanly.'
     ],
     learningOutcomes: ['Multi-threaded node engines', 'Docker image builds optimization', 'Cloud runtime scaling'],
-    githubTemplateUrl: 'https://github.com/skill2hire-templates/scaling-express-server'
+    githubTemplateUrl: 'https://github.com/skill2job-templates/scaling-express-server'
   }
 ];
 

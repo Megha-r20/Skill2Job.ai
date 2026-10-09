@@ -8,7 +8,7 @@ export default function BrandIdentityPage() {
       {/* Header Banner */}
       <div className="text-center space-y-2">
         <span className="px-3.5 py-1 rounded-full bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 font-black text-xs uppercase tracking-wider border border-primary-200 dark:border-primary-800/60 inline-block">
-          Official Skill2Hire Identity
+          Official Skill2Job.ai Identity
         </span>
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
           Brand Architecture & Ecosystem
@@ -29,7 +29,7 @@ export default function BrandIdentityPage() {
           {/* Left 5 Cols: Primary Official Logo & Tagline */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center text-center space-y-4 py-4 lg:border-r lg:border-slate-100 dark:lg:border-slate-800 lg:pr-10">
             <div className="relative w-56 sm:w-64 aspect-square rounded-[36px] overflow-hidden shadow-2xl hover:scale-105 transition-transform duration-300">
-              <img src="/logo-app-icon.png" alt="Skill2Hire Official Brand Logo" className="w-full h-full object-cover"/>
+              <img src="/logo-app-icon.png" alt="Skill2Job.ai Official Brand Logo" className="w-full h-full object-cover"/>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
@@ -42,17 +42,17 @@ export default function BrandIdentityPage() {
             </div>
           </div>
 
-          {/* Right 7 Cols: About Skill2Hire & Our Mission */}
+          {/* Right 7 Cols: About Skill2Job.ai & Our Mission */}
           <div className="lg:col-span-7 space-y-6">
             
-            {/* About Skill2Hire */}
+            {/* About Skill2Job.ai */}
             <div className="space-y-3">
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                About <span className="text-primary-600 dark:text-primary-400">Skill2Hire</span>
+                About <span className="text-primary-600 dark:text-primary-400">Skill2Job.ai</span>
               </h2>
               
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                <strong>Skill2Hire</strong> is an AI-powered Education-to-Employment Intelligence Platform that connects <strong>Students</strong>, <strong>Colleges</strong>, and <strong>Companies</strong> on a single platform. It helps students <span className="text-blue-600 font-bold">learn the right skills</span>, <span className="text-purple-600 font-bold">verify their abilities</span>, and <span className="text-emerald-600 font-bold">become job-ready</span>, while enabling colleges to prepare students based on real industry needs and helping companies find verified, skilled talent.
+                <strong>Skill2Job.ai</strong> is an AI-powered Education-to-Employment Intelligence Platform that connects <strong>Students</strong>, <strong>Colleges</strong>, and <strong>Companies</strong> on a single platform. It helps students <span className="text-blue-600 font-bold">learn the right skills</span>, <span className="text-purple-600 font-bold">verify their abilities</span>, and <span className="text-emerald-600 font-bold">become job-ready</span>, while enabling colleges to prepare students based on real industry needs and helping companies find verified, skilled talent.
               </p>
 
               {/* 3 Pillars Badge Row */}
@@ -104,10 +104,10 @@ export default function BrandIdentityPage() {
 
         </div>
 
-        {/* Middle Row: What Makes Skill2Hire Different? (6 Core Pillars) */}
+        {/* Middle Row: What Makes Skill2Job.ai Different? (6 Core Pillars) */}
         <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
           <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white text-center uppercase tracking-wider">
-            What Makes Skill2Hire Different?
+            What Makes Skill2Job.ai Different?
           </h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">

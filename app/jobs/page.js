@@ -81,7 +81,7 @@ function JobsSearchContent() {
                 <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-6 sm:p-10 text-white shadow-2xl border border-slate-800/80 space-y-6">
                     <div className="space-y-2 max-w-2xl">
                         <span className="px-3.5 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold uppercase tracking-wider border border-cyan-400/30 inline-block">
-                            Skill2Hire Placement Directory
+                            Skill2Job.ai Placement Directory
                         </span>
                         <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
                             Verified Job & Internship Search

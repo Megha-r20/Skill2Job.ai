@@ -148,7 +148,7 @@ export default function NewJobPage() {
             Create Job Opening with Instant Skill Extraction
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
-            Enter your natural text job description. Skill2Hire AI automatically parses required technical competencies and proficiency levels.
+            Enter your natural text job description. Skill2Job.ai AI automatically parses required technical competencies and proficiency levels.
           </p>
         </div>
 

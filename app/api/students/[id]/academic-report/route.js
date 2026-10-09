@@ -24,7 +24,7 @@ function buildAcademicReport(student) {
         admissionYear: 2022,
         graduationYear: grad,
         currentSemester: 6,
-        email: student?.email || 'alex.rivera@student.skill2hire.com',
+        email: student?.email || 'alex.rivera@student.skill2job.ai',
         cgpa: cgpa,
         totalCreditsEarned: 132,
         totalCreditsRequired: 160,
