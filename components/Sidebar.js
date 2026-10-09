@@ -85,15 +85,16 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                         { href: '/college/placement-readiness', label: 'Placement Readiness', icon: Award },
                         { href: '/college/demand-signals', label: 'Companies', icon: Building2 },
                         { href: '/jobs', label: 'Jobs', icon: Briefcase },
-                        { href: '/college/placement-readiness', label: 'Placement Drives', icon: Zap },
+                        { href: '/college/placement-drives', label: 'Placement Drives', icon: Zap, badge: 'Live' },
                     ]
                 },
                 {
                     title: 'ANALYTICS',
                     items: [
+                        { href: '/college/department-report', label: 'Department Report', icon: FileText, badge: 'Export' },
                         { href: '/college/training', label: 'Training Analytics', icon: Compass },
                         { href: '/college/placement-readiness', label: 'Placement Analytics', icon: Flame },
-                        { href: '/college/curriculum-gap', label: 'Reports', icon: FileText },
+                        { href: '/college/curriculum-gap', label: 'Curriculum Reports', icon: FileText },
                     ]
                 },
                 {
