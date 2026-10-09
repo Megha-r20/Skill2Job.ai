@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { applyRateLimit } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -143,6 +144,11 @@ const ALL_CATALOG_PROJECTS = [
 
 export async function GET(request) {
   try {
+    const rateLimit = await applyRateLimit(request, 'ai');
+    if (!rateLimit.allowed) {
+      return rateLimit.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role') || 'Software Developer';
     const studentId = searchParams.get('studentId') || 'std_1';

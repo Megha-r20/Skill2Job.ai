@@ -3,8 +3,14 @@ import { prisma } from '@/lib/prisma';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { otpRepository } from '@/lib/repositories/otpRepository';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
+import { applyRateLimit } from '@/lib/rateLimit';
+
 export async function POST(request) {
     try {
+        const rateLimit = await applyRateLimit(request, 'otp');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
+        }
         const body = await request.json();
         const { identifier, code, purpose = 'registration' } = body;
         if (!identifier || !code) {

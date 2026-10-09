@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
+import { applyRateLimit } from '@/lib/rateLimit';
+
 const analyzeCurriculumGaps = (a) => [];
 export async function GET(request, { params }) {
     try {
+        const rateLimit = await applyRateLimit(request, 'ai');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
+        }
         const session = await getAuthenticatedSession(request);
         const roleAuth = authorizeRole(session, ['college', 'admin']);
         if (!roleAuth.authorized) {

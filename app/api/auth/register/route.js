@@ -3,13 +3,12 @@ import { userRepository } from '@/lib/repositories/userRepository';
 import { verifyGoogleIdToken } from '@/lib/googleAuth';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
 import { registerSchema } from '@/lib/validations';
-import { checkRateLimit, rateLimitExceededResponse } from '@/lib/rateLimit';
+import { applyRateLimit } from '@/lib/rateLimit';
 export async function POST(request) {
     try {
-        const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
-        const rateLimit = await checkRateLimit(`register_${ip}`);
-        if (!rateLimit.success) {
-            return rateLimitExceededResponse();
+        const rateLimit = await applyRateLimit(request, 'auth');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
         }
         const rawBody = await request.json();
         const result = registerSchema.safeParse(rawBody);

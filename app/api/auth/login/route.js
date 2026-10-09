@@ -4,15 +4,14 @@ import { otpRepository } from '@/lib/repositories/otpRepository';
 import { verifyGoogleIdToken } from '@/lib/googleAuth';
 import { signSessionToken, logSecurityEvent, getAuthenticatedSession } from '@/lib/authMiddleware';
 import { loginSchema } from '@/lib/validations';
-import { checkRateLimit, rateLimitExceededResponse } from '@/lib/rateLimit';
+import { applyRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request) {
     try {
-        // Rate limit check based on IP
-        const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
-        const rateLimit = await checkRateLimit(`login_${ip}`);
-        if (!rateLimit.success) {
-            return rateLimitExceededResponse();
+        // Rate limit check based on IP and auth tier
+        const rateLimit = await applyRateLimit(request, 'auth');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
         }
 
         const rawBody = await request.json();

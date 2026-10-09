@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getCareerRecommendations } from '@/lib/ai';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
+import { applyRateLimit } from '@/lib/rateLimit';
+
 export async function GET(request, { params }) {
     try {
+        const rateLimit = await applyRateLimit(request, 'ai');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
+        }
         const session = await getAuthenticatedSession(request);
         const roleAuth = authorizeRole(session, ['student', 'college', 'admin']);
         if (!roleAuth.authorized) {

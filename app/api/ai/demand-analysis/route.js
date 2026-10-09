@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { calculateIndustrySkillDemand } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
+import { applyRateLimit } from '@/lib/rateLimit';
+
 export async function GET(request) {
     try {
+        const rateLimit = await applyRateLimit(request, 'ai');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
+        }
+
         const demand = await calculateIndustrySkillDemand();
         const jobs = await prisma.job.findMany({ where: { status: 'published' } });
         const totalJobs = jobs.length;

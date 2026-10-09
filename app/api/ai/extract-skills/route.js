@@ -1,13 +1,33 @@
 import { NextResponse } from 'next/server';
 import { extractSkillsFromJobDescription } from '@/lib/ai';
+import { applyRateLimit } from '@/lib/rateLimit';
+import { promptGuard, PROMPT_GUARD_CONFIG } from '@/lib/security/promptGuard';
+
 export async function POST(request) {
     try {
+        const rateLimit = await applyRateLimit(request, 'ai');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
+        }
+
         const body = await request.json();
         const { description } = body;
-        if (!description || description.trim().length === 0) {
+        if (!description || typeof description !== 'string' || description.trim().length === 0) {
             return NextResponse.json({ error: 'Job description text is required' }, { status: 400 });
         }
-        const result = await extractSkillsFromJobDescription(description);
+
+        // Validate and sanitize input against prompt injections and size limits
+        const guardResult = await promptGuard.validateShortInput(description, 'Job description', {
+            maxLength: PROMPT_GUARD_CONFIG.MAX_JOB_DESC_LENGTH
+        });
+        if (!guardResult.valid) {
+            return NextResponse.json({
+                error: guardResult.error,
+                violations: guardResult.violations || []
+            }, { status: 400 });
+        }
+
+        const result = await extractSkillsFromJobDescription(guardResult.sanitizedText);
         return NextResponse.json({
             success: true,
             ...result

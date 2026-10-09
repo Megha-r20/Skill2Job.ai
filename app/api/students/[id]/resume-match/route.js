@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { aiService } from '@/lib/services/aiService';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 import { storageService } from '@/lib/services/storageService';
+import { applyRateLimit } from '@/lib/rateLimit';
+import { promptGuard } from '@/lib/security/promptGuard';
 async function extractPdfText(buffer) {
     try {
         const pdfModule = require('pdf-parse');
@@ -23,6 +25,11 @@ async function extractPdfText(buffer) {
 
 export async function POST(request, { params }) {
     try {
+        const rateLimit = await applyRateLimit(request, 'ai');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
+        }
+
         const session = await getAuthenticatedSession(request);
         const roleAuth = authorizeRole(session, ['student']);
         if (!roleAuth.authorized) {
@@ -60,6 +67,23 @@ export async function POST(request, { params }) {
 
         // Extract PDF text
         const resumeText = await extractPdfText(buffer);
+
+        // Validate resume text against prompt injections and size limits
+        let validatedResumeText = resumeText;
+        if (resumeText && resumeText.trim().length > 0) {
+            const guardResult = await promptGuard.validateAndSanitizeResume(resumeText, {
+                userId: session.userId,
+                userRole: session.role
+            });
+            if (!guardResult.valid) {
+                return NextResponse.json({
+                    error: guardResult.error,
+                    violations: guardResult.violations || []
+                }, { status: 400 });
+            }
+            validatedResumeText = guardResult.sanitizedText;
+        }
+
         let job;
         if (jobId) {
             try {
@@ -70,7 +94,7 @@ export async function POST(request, { params }) {
         // Send EXTRACTED PDF TEXT to AI Service with fallback
         let aiAnalysis;
         try {
-            aiAnalysis = await aiService.analyzeResume(resumeText);
+            aiAnalysis = await aiService.analyzeResume(validatedResumeText);
         } catch (aiErr) {
             console.warn('[resume-match] AI analysis fallback:', aiErr.message);
             aiAnalysis = {

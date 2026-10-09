@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "node scripts/seed.mjs",
-    "test": "node --test tests/ai.test.mjs tests/verification.test.mjs tests/coding-sandbox.test.mjs tests/file-validation.test.mjs tests/auth-security.test.mjs tests/otp-security.test.mjs tests/resume-tools.test.mjs tests/recruiter-actions.test.mjs tests/college-placement-drives.test.mjs tests/admin-audit-notifications.test.mjs tests/pwa-i18n.test.mjs && node scripts/sanity.test.mjs",
+    "test": "node --test tests/ai.test.mjs tests/verification.test.mjs tests/coding-sandbox.test.mjs tests/file-validation.test.mjs tests/auth-security.test.mjs tests/otp-security.test.mjs tests/resume-tools.test.mjs tests/recruiter-actions.test.mjs tests/college-placement-drives.test.mjs tests/admin-audit-notifications.test.mjs tests/pwa-i18n.test.mjs tests/rate-limiting-and-prompt-guard.test.mjs && node scripts/sanity.test.mjs",
     "test:sanity": "node scripts/sanity.test.mjs"
   },
   "dependencies": {
@@ -37,9 +37,11 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "postcss": "^8.4.47",
     "prisma": "^5.22.0",
     "sharp": "^0.35.3",
-    "tailwindcss": "^3.4.13"
+    "tailwindcss": "^3.4.13",
+    "vitest": "^5.0.3"
   }
 }

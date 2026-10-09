@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { sendEmailOtp, sendSmsOtp, otpRepository } from '@/lib/otpService';
+import { applyRateLimit } from '@/lib/rateLimit';
+
 export async function POST(request) {
     try {
+        const rateLimit = await applyRateLimit(request, 'auth');
+        if (!rateLimit.allowed) {
+            return rateLimit.response;
+        }
         const body = await request.json();
         const { identifier } = body;
         if (!identifier) {
