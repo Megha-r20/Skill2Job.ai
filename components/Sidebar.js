@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
-import { ShieldCheck, LayoutDashboard, Briefcase, Zap, BookOpen, GraduationCap, Award, FileCheck2, Code2, Sparkles, Compass, FolderGit2, FileText, Send, Users, Flame, PlusCircle, Cpu, Layers, Building2, ChevronLeft, ChevronRight, LogOut, Settings, CheckCircle2, Search } from 'lucide-react';
+import { ShieldCheck, LayoutDashboard, Briefcase, Zap, BookOpen, GraduationCap, Award, FileCheck2, Code2, Sparkles, Compass, FolderGit2, FileText, Send, Users, Flame, PlusCircle, Cpu, Layers, Building2, ChevronLeft, ChevronRight, LogOut, Settings, CheckCircle2, Search, Bell, ShieldAlert, Megaphone } from 'lucide-react';
 
 export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) {
     const pathname = usePathname();
@@ -51,6 +51,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                 {
                     title: 'ACCOUNT & SECURITY',
                     items: [
+                        { href: '/notifications', label: 'Notifications', icon: Bell },
                         { href: '/security-audit', label: 'Security & Access Control', icon: ShieldCheck, badge: 'Audit' },
                         { href: '/brand', label: 'Brand & Identity', icon: Sparkles },
                         { href: '/differentiation', label: 'Platform Philosophy', icon: Flame },
@@ -100,6 +101,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                 {
                     title: 'ACCOUNT',
                     items: [
+                        { href: '/notifications', label: 'Notifications', icon: Bell },
                         { href: '/brand', label: 'Brand Identity', icon: Sparkles },
                         { href: '/differentiation', label: 'Ecosystem Intelligence', icon: Flame },
                     ]
@@ -146,6 +148,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                 {
                     title: 'ACCOUNT',
                     items: [
+                        { href: '/notifications', label: 'Notifications', icon: Bell },
                         { href: '/brand', label: 'Brand Identity', icon: Sparkles },
                         { href: '/differentiation', label: 'Platform Philosophy', icon: Flame },
                     ]
@@ -159,6 +162,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                     title: 'MANAGEMENT',
                     items: [
                         { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                        { href: '/admin/audit-trail', label: 'Security Audit Trail', icon: ShieldAlert, badge: 'Live' },
+                        { href: '/notifications', label: 'Broadcasts & Alerts', icon: Megaphone },
                         { href: '/college/students', label: 'Students', icon: Users },
                         { href: '/college/dashboard', label: 'Colleges', icon: GraduationCap },
                         { href: '/recruiter/dashboard', label: 'Companies', icon: Building2 },
