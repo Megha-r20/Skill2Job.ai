@@ -1,0 +1,75 @@
+{
+  "name": "Skill2Job.ai — AI Talent & Placement Platform",
+  "short_name": "Skill2Job",
+  "description": "AI-Powered Talent Discovery, Skill Verification & Campus Placement Ecosystem",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020617",
+  "theme_color": "#0284c7",
+  "categories": ["education", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Student Dashboard",
+      "short_name": "Dashboard",
+      "description": "View verified skill readiness score and active jobs",
+      "url": "/student/dashboard?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Explore Verified Jobs",
+      "short_name": "Jobs",
+      "description": "Find AI-matched job roles based on verified credentials",
+      "url": "/jobs?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Skill Assessments",
+      "short_name": "Assessments",
+      "description": "Take proctored exams and earn digital certificates",
+      "url": "/assessments/asm_python?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Notifications & Alerts",
+      "short_name": "Notifications",
+      "description": "View hiring updates and campus drive broadcasts",
+      "url": "/notifications?source=pwa",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

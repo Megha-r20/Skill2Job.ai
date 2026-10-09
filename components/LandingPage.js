@@ -2,9 +2,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 import { Sparkles, ArrowRight, GraduationCap, Building2, Briefcase, BrainCircuit, Target, FileCheck2, TrendingUp, ShieldCheck, Zap, Users } from 'lucide-react';
 export default function LandingPage() {
     const [activeTab, setActiveTab] = useState('student');
+    const { t } = useLanguage();
     return (<div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950 relative overflow-hidden">
       
       {/* Dynamic Background Effects */}
@@ -26,12 +29,13 @@ export default function LandingPage() {
             <a href="#impact" className="hover:text-cyan-400 transition-colors">Impact & Stats</a>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors">
-              Sign In
+          <div className="flex items-center gap-2 sm:gap-3">
+            <LanguageSelector variant="landing" />
+            <Link href="/login" className="px-3 sm:px-4 py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors">
+              {t('landing.signIn', 'Sign In')}
             </Link>
-            <Link href="/signup" className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs shadow-lg shadow-cyan-500/25 flex items-center gap-1.5 transition-all hover:scale-[1.02]">
-              <span>Get Started</span>
+            <Link href="/signup" className="px-3 sm:px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs shadow-lg shadow-cyan-500/25 flex items-center gap-1.5 transition-all hover:scale-[1.02]">
+              <span>{t('landing.getStarted', 'Get Started')}</span>
               <ArrowRight className="w-3.5 h-3.5"/>
             </Link>
           </div>
@@ -44,19 +48,19 @@ export default function LandingPage() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold shadow-inner">
           <Sparkles className="w-3.5 h-3.5 animate-pulse"/>
-          <span>Next-Generation Career & Recruitment Platform</span>
+          <span>{t('landing.heroBadge', 'Next-Generation Career & Recruitment Platform')}</span>
         </div>
 
         {/* Main Headline */}
         <div className="space-y-4 max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight sm:leading-none">
-            Bridge the Gap Between <br className="hidden sm:block"/>
+            {t('landing.heroTitle1', 'Bridge the Gap Between')} <br className="hidden sm:block"/>
             <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Academic Skills & Industry Jobs
+              {t('landing.heroTitle2', 'Academic Skills & Industry Jobs')}
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-400 font-medium max-w-2xl mx-auto leading-relaxed">
-            Skill2Job.ai connects Students, Colleges, and Enterprise Recruiters using AI-driven resume analysis, skill-gap detection, and verified match scoring.
+            {t('landing.heroSubtitle', 'Skill2Job.ai connects Students, Colleges, and Enterprise Recruiters using AI-driven resume analysis, skill-gap detection, and verified match scoring.')}
           </p>
         </div>
 

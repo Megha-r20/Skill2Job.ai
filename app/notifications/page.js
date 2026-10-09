@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 import {
     Bell, CheckCircle2, ShieldCheck, Zap, Award, Send,
     Megaphone, Filter, Check, Clock, ExternalLink, RefreshCw,
@@ -10,6 +11,7 @@ import {
 
 export default function NotificationsPage() {
     const { user, profile, role } = useAuth();
+    const { t } = useLanguage();
     const currentRole = role || 'student';
     const userId = user?.id || profile?.id || 'u_student_1';
 
@@ -150,13 +152,13 @@ export default function NotificationsPage() {
                         <div className="space-y-1">
                             <span className="text-xs font-bold uppercase tracking-wider text-primary-600 flex items-center gap-1.5">
                                 <Bell className="w-4 h-4 text-primary-600" />
-                                Notifications & Activity Hub
+                                {t('notifications.title', 'Notifications & Activity Hub')}
                             </span>
                             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                                <span>Platform Activity Feed</span>
+                                <span>{t('notifications.title', 'Platform Activity Feed')}</span>
                                 {unreadCount > 0 && (
                                     <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-primary-600 text-white">
-                                        {unreadCount} Unread
+                                        {t('notifications.unread', '{count} Unread', { count: unreadCount })}
                                     </span>
                                 )}
                             </h1>
@@ -173,7 +175,7 @@ export default function NotificationsPage() {
                                     className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
                                 >
                                     <Check className="w-3.5 h-3.5" />
-                                    <span>Mark All as Read</span>
+                                    <span>{t('notifications.markAllRead', 'Mark All as Read')}</span>
                                 </button>
                             )}
 

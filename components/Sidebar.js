@@ -3,13 +3,16 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 import Skill2HireLogo from '@/components/Skill2HireLogo';
-import { ShieldCheck, LayoutDashboard, Briefcase, Zap, BookOpen, GraduationCap, Award, FileCheck2, Code2, Sparkles, Compass, FolderGit2, FileText, Send, Users, Flame, PlusCircle, Cpu, Layers, Building2, ChevronLeft, ChevronRight, LogOut, Settings, CheckCircle2, Search, Bell, ShieldAlert, Megaphone } from 'lucide-react';
+import { ShieldCheck, LayoutDashboard, Briefcase, Zap, BookOpen, GraduationCap, Award, FileCheck2, Code2, Sparkles, Compass, FolderGit2, FileText, Send, Users, Flame, PlusCircle, Cpu, Layers, Building2, ChevronLeft, ChevronRight, LogOut, Settings, CheckCircle2, Search, Bell, ShieldAlert, Megaphone, Globe } from 'lucide-react';
 
 export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) {
     const pathname = usePathname();
     const router = useRouter();
     const { user, profile, role, switchPersona, logout } = useAuth();
+    const { t } = useLanguage();
     const currentRole = role || 'student';
 
     // Navigation Items Config grouped by sections per role
@@ -268,8 +271,18 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
 
                 {/* BOTTOM USER PERSONA & ACTIONS */}
                 <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-2">
-                    {/* Quick Account Links */}
-                    <div className="space-y-0.5">
+                    {/* Quick Account & Language Links */}
+                    <div className="space-y-1">
+                        <div className={`flex items-center gap-2 px-2 py-1 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+                            {!isCollapsed && (
+                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                    <Globe className="w-3.5 h-3.5 text-primary-500" />
+                                    <span>{t('common.language', 'Language')}</span>
+                                </span>
+                            )}
+                            <LanguageSelector compact={isCollapsed} variant="sidebar" />
+                        </div>
+
                         <Link
                             href="/login"
                             onClick={() => setIsMobileOpen(false)}
@@ -277,7 +290,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                             title={isCollapsed ? 'Settings & Switch Persona' : undefined}
                         >
                             <Settings className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                            {!isCollapsed && <span className="truncate">Settings & Role Switch</span>}
+                            {!isCollapsed && <span className="truncate">{t('common.settings', 'Settings & Role Switch')}</span>}
                         </Link>
 
                         <button
@@ -286,7 +299,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, set
                             title={isCollapsed ? 'Logout' : undefined}
                         >
                             <LogOut className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />
-                            {!isCollapsed && <span className="truncate">Sign Out</span>}
+                            {!isCollapsed && <span className="truncate">{t('common.logout', 'Sign Out')}</span>}
                         </button>
                     </div>
 

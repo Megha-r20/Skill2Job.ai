@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth, DEMO_PERSONAS } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 import { Menu, Search, Bell, ChevronDown, X, ShieldCheck, Sun, Moon } from 'lucide-react';
 import SecuritySettingsModal from '@/components/SecuritySettingsModal';
 
@@ -12,6 +14,7 @@ export default function TopHeader({ isCollapsed, setIsCollapsed, isMobileOpen, s
     const router = useRouter();
     const { user, profile, role, switchPersona } = useAuth();
     const { resolvedTheme, toggleTheme } = useTheme();
+    const { t } = useLanguage();
     const currentRole = role || 'student';
 
     // Search State
@@ -188,8 +191,11 @@ export default function TopHeader({ isCollapsed, setIsCollapsed, isMobileOpen, s
                 )}
             </div>
 
-            {/* RIGHT CONTROLS: Theme Toggle, Notifications, Persona Switcher */}
+            {/* RIGHT CONTROLS: Language, Theme Toggle, Notifications, Persona Switcher */}
             <div className="flex items-center gap-1.5 sm:gap-2.5">
+                {/* Multi-Language Selector Dropdown */}
+                <LanguageSelector compact={true} variant="header" />
+
                 {/* Dark / Light Theme Toggle */}
                 <button
                     onClick={toggleTheme}
