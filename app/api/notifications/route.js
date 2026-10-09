@@ -1,39 +1,35 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedSession } from '@/lib/authMiddleware';
+import { recruiterNotificationService } from '@/lib/services/recruiterNotificationService';
+
 export async function GET(request) {
     try {
         const session = await getAuthenticatedSession(request);
-        if (!session) {
-            return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-        }
-        const userId = session.userId;
-        const notifications = [
+        const studentId = session?.studentId || 'std_1';
+
+        const liveNotifications = recruiterNotificationService.getInAppNotifications(studentId);
+
+        const defaultNotifications = [
             {
-                id: 'notif_1',
-                title: 'Application Shortlisted',
-                message: 'Your application for Full-Stack Developer at TechNova has been shortlisted!',
-                type: 'APPLICATION',
-                read: false,
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: 'notif_2',
-                title: 'New Assessment Assigned',
-                message: 'Complete the Next.js Architecture assessment to earn your verified badge.',
+                id: 'notif_default_1',
+                title: 'New Assessment Available',
+                message: 'Complete the Python Algorithms assessment to boost your match score.',
                 type: 'ASSESSMENT',
-                read: true,
-                createdAt: new Date(Date.now() - 86400000).toISOString()
+                read: false,
+                createdAt: new Date(Date.now() - 3600000).toISOString()
             }
         ];
-        const unreadCount = notifications.filter(n => !n.read).length;
+
+        const allNotifications = [...liveNotifications, ...defaultNotifications];
+        const unreadCount = allNotifications.filter(n => !n.read).length;
+
         return NextResponse.json({
             success: true,
-            notifications,
+            notifications: allNotifications,
             unreadCount
         });
-    }
-    catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+    } catch (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 export async function PUT(request) {

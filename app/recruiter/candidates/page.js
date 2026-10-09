@@ -33,11 +33,31 @@ export default function CandidateSearchPage() {
     useEffect(() => {
         loadCandidates();
     }, [searchSkill, minCgpa, onlyVerified]);
-    const toggleShortlist = (candId) => {
+    const toggleShortlist = async (candidate) => {
+        const candId = typeof candidate === 'object' ? candidate.id : candidate;
+        const willShortlist = !shortlistedMap[candId];
         setShortlistedMap(prev => ({
             ...prev,
-            [candId]: !prev[candId]
+            [candId]: willShortlist
         }));
+
+        if (willShortlist) {
+            try {
+                const targetAppId = candId === 'std_1' ? 'app_1' : candId === 'std_2' ? 'app_2' : `app_${candId}`;
+                await fetch('/api/recruiter/applications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'bulk_status',
+                        applicationIds: [targetAppId],
+                        status: 'Shortlisted',
+                        notes: 'Shortlisted directly from Collegiate Talent Discovery search.'
+                    })
+                });
+            } catch (e) {
+                console.warn('[Talent Search] Shortlist notification dispatch:', e.message);
+            }
+        }
     };
     return (<div className="min-h-screen bg-slate-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
