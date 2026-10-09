@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs/config';
+
 /** @type {import('next').NextConfig} */
 
 // Refuse to start without a secret
@@ -11,4 +13,8 @@ const nextConfig = {
   reactStrictMode: true,
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  silent: true,
+  dryRun: !process.env.SENTRY_AUTH_TOKEN,
+  disableLogger: true,
+});

@@ -3,6 +3,8 @@ import { resumeService } from '@/lib/services/resumeService';
 import { applyRateLimit } from '@/lib/rateLimit';
 import { promptGuard } from '@/lib/security/promptGuard';
 import { atsScoreSchema, validateWithSchema } from '@/lib/validations';
+import { aiCache } from '@/lib/cache/aiCache';
+import { logger } from '@/lib/logger';
 
 /**
  * @param {import('next/server').NextRequest} request
@@ -38,10 +40,14 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
-        const atsResults = resumeService.calculateAtsScore(
-            guardResult.sanitizedText,
-            promptGuard.sanitizeText(jobDescription || ''),
-            promptGuard.sanitizeText(targetRole || '')
+        const sanitizedJob = promptGuard.sanitizeText(jobDescription || '');
+        const sanitizedRole = promptGuard.sanitizeText(targetRole || '');
+
+        const { data: atsResults } = await aiCache.wrap(
+            'ats_score',
+            { resume: guardResult.sanitizedText, job: sanitizedJob, role: sanitizedRole },
+            async () => resumeService.calculateAtsScore(guardResult.sanitizedText, sanitizedJob, sanitizedRole),
+            { ttl: 86400 }
         );
 
         return NextResponse.json({
@@ -51,7 +57,7 @@ export async function POST(request) {
             headers: rateLimit.headers
         });
     } catch (error) {
-        console.error('[ats-score-api] Error:', error);
+        logger.error('[ats-score-api] Error calculating ATS score', error, { route: '/api/resume/ats-score' });
         return NextResponse.json({
             success: false,
             error: error.message

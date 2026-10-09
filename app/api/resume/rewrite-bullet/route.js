@@ -3,6 +3,7 @@ import { resumeService } from '@/lib/services/resumeService';
 import { applyRateLimit } from '@/lib/rateLimit';
 import { promptGuard } from '@/lib/security/promptGuard';
 import { rewriteBulletSchema, validateWithSchema } from '@/lib/validations';
+import { logger } from '@/lib/logger';
 
 /**
  * @param {import('next/server').NextRequest} request
@@ -51,7 +52,7 @@ export async function POST(request) {
             headers: rateLimit.headers
         });
     } catch (error) {
-        console.error('[rewrite-bullet-api] Error:', error);
+        logger.error('[rewrite-bullet-api] Error rewriting bullet point', error, { route: '/api/resume/rewrite-bullet' });
         return NextResponse.json({
             success: false,
             error: error.message

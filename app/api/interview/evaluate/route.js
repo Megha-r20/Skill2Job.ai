@@ -4,6 +4,8 @@ import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/li
 import { applyRateLimit } from '@/lib/rateLimit';
 import { promptGuard } from '@/lib/security/promptGuard';
 import { interviewEvaluateSchema, validateWithSchema } from '@/lib/validations';
+import { aiCache } from '@/lib/cache/aiCache';
+import { logger } from '@/lib/logger';
 
 /**
  * @param {import('next/server').NextRequest} request
@@ -50,16 +52,26 @@ export async function POST(request) {
             }, { status: 400 });
         }
 
-        const evaluation = evaluateInterviewResponse(questionText, guardResult.sanitizedText, category || 'Technical');
-        evaluation.studentId = studentId;
-        evaluation.questionId = questionId || 'iq_custom';
+        const { data: evaluation } = await aiCache.wrap(
+            'interview_evaluation',
+            { questionText, answer: guardResult.sanitizedText, category: category || 'Technical' },
+            async () => evaluateInterviewResponse(questionText, guardResult.sanitizedText, category || 'Technical'),
+            { ttl: 86400 }
+        );
+
+        const responsePayload = {
+            ...evaluation,
+            studentId,
+            questionId: questionId || 'iq_custom'
+        };
+
         return NextResponse.json({
             success: true,
-            evaluation
+            evaluation: responsePayload
         });
     }
     catch (error) {
-        console.error('Error evaluating interview answer:', error);
+        logger.error('Error evaluating interview answer', error, { route: '/api/interview/evaluate' });
         return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
     }
 }

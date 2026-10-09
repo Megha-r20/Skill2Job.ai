@@ -14,7 +14,7 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed": "node scripts/seed.mjs",
-    "test": "node --test tests/ai.test.mjs tests/verification.test.mjs tests/coding-sandbox.test.mjs tests/file-validation.test.mjs tests/auth-security.test.mjs tests/otp-security.test.mjs tests/resume-tools.test.mjs tests/recruiter-actions.test.mjs tests/college-placement-drives.test.mjs tests/admin-audit-notifications.test.mjs tests/pwa-i18n.test.mjs tests/rate-limiting-and-prompt-guard.test.mjs && node scripts/sanity.test.mjs",
+    "test": "node --test tests/ai.test.mjs tests/verification.test.mjs tests/coding-sandbox.test.mjs tests/file-validation.test.mjs tests/auth-security.test.mjs tests/otp-security.test.mjs tests/resume-tools.test.mjs tests/recruiter-actions.test.mjs tests/college-placement-drives.test.mjs tests/admin-audit-notifications.test.mjs tests/pwa-i18n.test.mjs tests/rate-limiting-and-prompt-guard.test.mjs tests/ai-cache.test.mjs tests/sentry-logger.test.mjs && node scripts/sanity.test.mjs",
     "test:vitest": "vitest run",
     "test:all": "npm test && npm run test:vitest",
     "test:sanity": "node scripts/sanity.test.mjs"
@@ -27,6 +27,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1147.0",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.22.0",
+    "@sentry/nextjs": "^11.6.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.4",
     "@vercel/blob": "^2.8.1",
