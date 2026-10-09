@@ -251,3 +251,88 @@ model AssessmentQuestion {
 
   @@index([assessmentId])
 }
+
+model Certificate {
+  id                String   @id @default(uuid())
+  certificateNumber String   @unique
+  studentId         String
+  studentName       String
+  studentEmail      String?
+  collegeName       String
+  skillName         String
+  category          String
+  level             String
+  score             Float
+  proctoringStatus  String   @default("CLEAN_PROCTORED")
+  verificationHash  String
+  issuedDate        DateTime @default(now())
+  metadata          Json?
+
+  @@index([studentId])
+  @@index([certificateNumber])
+}
+
+model PlacementDrive {
+  id                      String   @id @default(uuid())
+  collegeId               String
+  companyName             String
+  companyLogo             String?
+  title                   String
+  departments             String[]
+  minCgpa                 Float
+  batchYear               String
+  packageCtc              String
+  openings                Int
+  mode                    String
+  location                String
+  registrationDeadline    String
+  assessmentDate          String
+  driveDate               String
+  status                  String
+  eligibleStudentsCount   Int      @default(0)
+  registeredStudentsCount Int      @default(0)
+  shortlistedCount        Int      @default(0)
+  selectedCount           Int      @default(0)
+  contactPerson           String?
+  notes                   String?
+  createdAt               DateTime @default(now())
+
+  @@index([collegeId])
+  @@index([status])
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  action         String
+  category       String
+  status         String
+  severity       String
+  actor          Json
+  targetResource Json?
+  details        Json?
+  timestamp      DateTime @default(now())
+
+  @@index([category])
+  @@index([action])
+  @@index([status])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  recipientId String?
+  userId      String?
+  role        String?
+  title       String
+  message     String
+  category    String   @default("GENERAL")
+  type        String   @default("INFO")
+  link        String?
+  priority    String   @default("NORMAL")
+  read        Boolean  @default(false)
+  broadcast   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([recipientId])
+  @@index([userId])
+  @@index([read])
+}

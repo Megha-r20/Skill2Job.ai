@@ -1,4 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import { setDbOffline } from '../../lib/prisma.js';
+
+setDbOffline();
+
 import {
     normalizeSkill,
     evaluateCgpaEligibility,

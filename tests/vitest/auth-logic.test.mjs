@@ -3,6 +3,9 @@ import { describe, it, expect } from 'vitest';
 // Guarantee JWT secret is set prior to module evaluation
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key-at-least-32-chars-long-security';
 
+const { setDbOffline } = await import('../../lib/prisma.js');
+setDbOffline();
+
 const {
     signSessionToken,
     verifySessionToken,
