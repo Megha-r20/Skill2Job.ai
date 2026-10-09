@@ -1,13 +1,22 @@
 import { NextResponse } from 'next/server';
 import { placementDriveRepository } from '@/lib/repositories/placementDriveRepository';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { driveIdParamSchema, validateWithSchema } from '@/lib/validations';
 
 /**
  * GET, PUT, DELETE for individual placement drive.
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string, driveId: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function GET(request, { params }) {
     try {
-        const drive = await placementDriveRepository.findById(params.driveId);
+        const paramValidation = validateWithSchema(driveIdParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
+        const drive = await placementDriveRepository.findById(paramValidation.data.driveId);
         if (!drive) {
             return NextResponse.json({ error: 'Placement drive not found' }, { status: 404 });
         }
@@ -17,8 +26,17 @@ export async function GET(request, { params }) {
     }
 }
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string, driveId: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function PUT(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(driveIdParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
         const session = await getAuthenticatedSession(request);
         if (session) {
             const roleAuth = authorizeRole(session, ['college', 'admin']);

@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 import { codingProblemRepository } from '@/lib/repositories/codingProblemRepository';
 import { codeExecutionService } from '@/lib/services/codeExecutionService';
+import { codingSubmitSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const session = await getAuthenticatedSession(request);
@@ -11,8 +16,13 @@ export async function POST(request) {
             return roleAuth.errorResponse;
         }
 
-        const body = await request.json();
-        const { problemId = 'cp_1', language = 'python', code = '', studentId: reqStudentId } = body;
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(codingSubmitSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
+        }
+
+        const { problemId, language, code, studentId: reqStudentId } = validation.data;
         const studentId = reqStudentId || session.studentId || session.userId;
 
         if (session.role === 'student') {

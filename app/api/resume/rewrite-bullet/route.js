@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import { resumeService } from '@/lib/services/resumeService';
 import { applyRateLimit } from '@/lib/rateLimit';
 import { promptGuard } from '@/lib/security/promptGuard';
+import { rewriteBulletSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         // 1. Rate Limiting on Costly AI Operations
@@ -11,8 +16,14 @@ export async function POST(request) {
             return rateLimit.response;
         }
 
-        const body = await request.json().catch(() => ({}));
-        const { bulletText, role, technologies, model } = body;
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(rewriteBulletSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
+        }
+
+        const { bulletText } = validation.data;
+        const { role, technologies, model } = rawBody;
 
         // 2. Input Size Limit & Prompt Injection Check on bullet text
         const guardResult = await promptGuard.validateShortInput(bulletText, 'Bullet point', {

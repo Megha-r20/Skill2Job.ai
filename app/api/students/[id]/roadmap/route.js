@@ -2,9 +2,24 @@ import { NextResponse } from 'next/server';
 import { generatePersonalizedRoadmap } from '@/lib/ai';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { idParamSchema, roadmapQuerySchema, validateWithSchema, validateQueryParams } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request, { params }) {
     try {
+        const paramVal = validateWithSchema(idParamSchema, params);
+        if (!paramVal.success) return paramVal.errorResponse;
+        const studentId = paramVal.data.id;
+
+        const queryVal = validateQueryParams(roadmapQuerySchema, request);
+        if (!queryVal.success) return queryVal.errorResponse;
+        const jobId = queryVal.data.jobId || undefined;
+        const targetRole = queryVal.data.targetRole || undefined;
+
         const rateLimit = await applyRateLimit(request, 'ai');
         if (!rateLimit.allowed) {
             return rateLimit.response;
@@ -14,14 +29,12 @@ export async function GET(request, { params }) {
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
-        const ownerAuth = await authorizeOwnership(session, params.id, 'student');
+        const ownerAuth = await authorizeOwnership(session, studentId, 'student');
         if (!ownerAuth.authorized) {
             return ownerAuth.errorResponse;
         }
-        const { searchParams } = new URL(request.url);
-        const jobId = searchParams.get('jobId') || undefined;
-        const targetRole = searchParams.get('targetRole') || undefined;
-        const roadmap = await generatePersonalizedRoadmap(params.id, jobId, targetRole);
+
+        const roadmap = await generatePersonalizedRoadmap(studentId, jobId, targetRole);
         return NextResponse.json({
             success: true,
             roadmap

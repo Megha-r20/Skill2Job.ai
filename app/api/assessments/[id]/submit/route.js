@@ -3,21 +3,38 @@ import { getAuthenticatedSession } from '@/lib/authMiddleware';
 import { assessmentRepository } from '@/lib/repositories/assessmentRepository';
 import { studentRepository } from '@/lib/repositories/studentRepository';
 import { certificateRepository } from '@/lib/repositories/certificateRepository';
+import { idParamSchema, assessmentSubmitSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
         const session = await getAuthenticatedSession(request);
         if (!session) {
             return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
         }
 
-        const assessmentId = params.id;
+        const assessmentId = paramValidation.data.id;
         const assessment = await assessmentRepository.findById(assessmentId);
         if (!assessment) {
             return NextResponse.json({ success: false, error: 'Assessment not found' }, { status: 404 });
         }
 
-        const body = await request.json().catch(() => ({}));
+        const rawBody = await request.json().catch(() => ({}));
+        const bodyValidation = validateWithSchema(assessmentSubmitSchema, rawBody);
+        if (!bodyValidation.success) {
+            return bodyValidation.errorResponse;
+        }
+
+        const body = { ...rawBody, ...bodyValidation.data };
         const studentId = session.userId || body.studentId || session.email;
         const student = await studentRepository.findById(studentId) || {
             id: studentId,

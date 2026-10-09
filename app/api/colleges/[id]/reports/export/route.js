@@ -2,19 +2,31 @@ import { NextResponse } from 'next/server';
 import { placementDriveRepository } from '@/lib/repositories/placementDriveRepository';
 import { generateCsv, generatePrintableReportHtml } from '@/lib/utils/exportUtils';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
+import { z } from 'zod';
+
+const exportQuerySchema = z.object({
+    type: z.enum(['drives', 'departments', 'students']).optional().default('departments'),
+    format: z.enum(['csv', 'html', 'json', 'pdf']).optional().default('csv'),
+    batchYear: z.string().optional().default('2026')
+});
 
 /**
  * GET /api/colleges/[id]/reports/export
  * Generates official institutional export files in CSV, PDF/HTML, or JSON.
- * Query Parameters:
- * - type: 'drives' | 'departments' | 'students' (default: 'departments')
- * - format: 'csv' | 'html' | 'json' (default: 'csv')
- * - batchYear: string (default: '2026')
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function GET(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
         const session = await getAuthenticatedSession(request);
-        const collegeId = params.id || 'col_1';
+        const collegeId = paramValidation.data.id || 'col_1';
 
         if (session) {
             const roleAuth = authorizeRole(session, ['college', 'admin']);
@@ -22,9 +34,13 @@ export async function GET(request, { params }) {
         }
 
         const { searchParams } = new URL(request.url);
-        const type = searchParams.get('type') || 'departments';
-        const format = searchParams.get('format') || 'csv';
-        const batchYear = searchParams.get('batchYear') || '2026';
+        const queryRaw = {
+            type: searchParams.get('type') || 'departments',
+            format: searchParams.get('format') || 'csv',
+            batchYear: searchParams.get('batchYear') || '2026'
+        };
+        const queryValidation = validateWithSchema(exportQuerySchema, queryRaw);
+        const { type, format, batchYear } = queryValidation.success ? queryValidation.data : queryRaw;
 
         const { headers, rows } = await placementDriveRepository.getExportData(type, collegeId, batchYear);
 

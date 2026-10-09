@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { courseRepository } from '@/lib/repositories/courseRepository';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);

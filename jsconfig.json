@@ -6,11 +6,23 @@
         "./*"
       ]
     },
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": false,
+    "strictNullChecks": false
   },
   "include": [
     "**/*.js",
     "**/*.jsx",
+    "**/*.mjs",
+    "types/**/*.d.ts",
     ".next/types/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
   ]
 }

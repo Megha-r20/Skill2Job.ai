@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { logSecurityEvent, getAuthenticatedSession } from '@/lib/authMiddleware';
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     const session = await getAuthenticatedSession(request);
     if (session) {

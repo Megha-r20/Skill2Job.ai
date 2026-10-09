@@ -2,10 +2,32 @@ import { NextResponse } from 'next/server';
 import { applicationRepository } from '@/lib/repositories/applicationRepository';
 import { recruiterNotificationService } from '@/lib/services/recruiterNotificationService';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { validateWithSchema } from '@/lib/validations';
+import { z } from 'zod';
+
+const recruiterPutStatusSchema = z.object({
+    applicationId: z.string().min(1, 'Application ID is required'),
+    status: z.string().min(1, 'Status is required'),
+    notes: z.string().optional(),
+    interviewSchedule: z.any().optional(),
+    companyId: z.string().optional()
+});
+
+const recruiterPostActionSchema = z.object({
+    action: z.enum(['bulk_status', 'schedule_interview', 'shortlist']).optional().default('bulk_status'),
+    applicationIds: z.array(z.string()).optional(),
+    applicationId: z.string().optional(),
+    status: z.string().optional(),
+    notes: z.string().optional(),
+    interviewSchedule: z.any().optional(),
+    companyId: z.string().optional()
+});
 
 /**
  * GET /api/recruiter/applications
  * Returns candidate applications for the recruiter's company, enriched with verified skills.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function GET(request) {
     try {
@@ -95,15 +117,20 @@ export async function GET(request) {
  */
 export async function PUT(request) {
     try {
-        const session = await getAuthenticatedSession(request);
-        const body = await request.json();
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(recruiterPutStatusSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
+        }
 
+        const body = validation.data;
         let effectiveSession = session;
         if (!effectiveSession && process.env.NODE_ENV !== 'production') {
+            const demoCompany = body.companyId || 'comp_1';
             effectiveSession = {
                 userId: 'u_comp_demo',
                 role: 'company',
-                companyId: body.companyId || 'comp_1',
+                companyId: demoCompany,
                 email: 'recruiter@technova.com'
             };
         }
@@ -114,12 +141,6 @@ export async function PUT(request) {
         }
 
         const { applicationId, status, notes, interviewSchedule } = body;
-        if (!applicationId || !status) {
-            return NextResponse.json(
-                { error: 'Application ID and status are required' },
-                { status: 400 }
-            );
-        }
 
         const existingApp = await applicationRepository.findById(applicationId);
         if (!existingApp) {

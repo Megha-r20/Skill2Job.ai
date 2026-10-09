@@ -2,18 +2,26 @@ import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { sendEmailOtp, sendSmsOtp, otpRepository } from '@/lib/otpService';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { forgotPasswordSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'auth');
         if (!rateLimit.allowed) {
             return rateLimit.response;
         }
-        const body = await request.json();
-        const { identifier } = body;
-        if (!identifier) {
-            return NextResponse.json({ error: 'Email address or Phone number is required.' }, { status: 400 });
+
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(forgotPasswordSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
         }
+
+        const { identifier } = validation.data;
         const user = await userRepository.findByEmailOrPhone(identifier.trim());
         if (!user) {
             return NextResponse.json({ error: 'No account registered with this email or phone number.' }, { status: 404 });

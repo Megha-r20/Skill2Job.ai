@@ -4,18 +4,26 @@ import { userRepository } from '@/lib/repositories/userRepository';
 import { otpRepository } from '@/lib/repositories/otpRepository';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { otpVerifySchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'otp');
         if (!rateLimit.allowed) {
             return rateLimit.response;
         }
-        const body = await request.json();
-        const { identifier, code, purpose = 'registration' } = body;
-        if (!identifier || !code) {
-            return NextResponse.json({ error: 'Identifier and 6-digit verification code are required.' }, { status: 400 });
+
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(otpVerifySchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
         }
+
+        const { identifier, code, purpose } = validation.data;
         const cleanIdentifier = identifier.trim().toLowerCase();
         
         const otpResult = await otpRepository.verifyOtp({

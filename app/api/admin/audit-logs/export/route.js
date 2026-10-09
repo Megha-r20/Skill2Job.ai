@@ -2,15 +2,21 @@ import { NextResponse } from 'next/server';
 import { auditService } from '@/lib/services/auditService';
 import { generateCsv } from '@/lib/utils/exportUtils';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { auditLogsExportQuerySchema, validateQueryParams } from '@/lib/validations';
 
 /**
  * GET /api/admin/audit-logs/export
  * Exports complete security audit trail as CSV or JSON.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function GET(request) {
     try {
+        const queryVal = validateQueryParams(auditLogsExportQuerySchema, request);
+        if (!queryVal.success) return queryVal.errorResponse;
+        const { format, category, status } = queryVal.data;
+
         const session = await getAuthenticatedSession(request);
-        const { searchParams } = new URL(request.url);
 
         let effectiveSession = session;
         if (!effectiveSession && process.env.NODE_ENV !== 'production') {
@@ -23,10 +29,6 @@ export async function GET(request) {
 
         const roleAuth = authorizeRole(effectiveSession, ['admin']);
         if (!roleAuth.authorized) return roleAuth.errorResponse;
-
-        const format = searchParams.get('format') || 'csv';
-        const category = searchParams.get('category') || 'All';
-        const status = searchParams.get('status') || 'All';
 
         const { headers, rows } = await auditService.getExportData({ category, status });
 

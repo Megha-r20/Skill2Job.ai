@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import { extractSkillsFromJobDescription } from '@/lib/ai';
 import { applyRateLimit } from '@/lib/rateLimit';
 import { promptGuard, PROMPT_GUARD_CONFIG } from '@/lib/security/promptGuard';
+import { extractSkillsSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'ai');
@@ -10,11 +15,13 @@ export async function POST(request) {
             return rateLimit.response;
         }
 
-        const body = await request.json();
-        const { description } = body;
-        if (!description || typeof description !== 'string' || description.trim().length === 0) {
-            return NextResponse.json({ error: 'Job description text is required' }, { status: 400 });
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(extractSkillsSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
         }
+
+        const { description } = validation.data;
 
         // Validate and sanitize input against prompt injections and size limits
         const guardResult = await promptGuard.validateShortInput(description, 'Job description', {

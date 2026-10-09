@@ -3,6 +3,10 @@ import { calculateIndustrySkillDemand } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
 import { applyRateLimit } from '@/lib/rateLimit';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'ai');

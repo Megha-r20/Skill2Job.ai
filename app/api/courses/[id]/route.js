@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request, { params }) {
     try {
-        const course = await prisma.course.findUnique({ where: { id: params.id }, include: { lessons: true } });
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) return paramValidation.errorResponse;
+
+        const course = await prisma.course.findUnique({ where: { id: paramValidation.data.id }, include: { lessons: true } });
         if (!course) {
             return NextResponse.json({ error: 'Course not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
         }

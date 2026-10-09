@@ -1,21 +1,26 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
 import { notificationService } from '@/lib/services/notificationService';
+import { notificationsGetQuerySchema, notificationCreateSchema, notificationUpdateSchema, validateQueryParams, validateWithSchema } from '@/lib/validations';
 
 /**
  * GET /api/notifications
  * Retrieves user notifications and system announcements with category filtering.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function GET(request) {
     try {
+        const queryVal = validateQueryParams(notificationsGetQuerySchema, request);
+        if (!queryVal.success) return queryVal.errorResponse;
+        const { category = 'All', unread } = queryVal.data;
+        const unreadOnly = unread === 'true';
+
         const session = await getAuthenticatedSession(request);
-        const { searchParams } = new URL(request.url);
 
         const userId = session?.userId || 'u_student_1';
         const studentId = session?.studentId || 'std_1';
         const role = session?.role || 'student';
-        const category = searchParams.get('category') || 'All';
-        const unreadOnly = searchParams.get('unread') === 'true';
 
         const { notifications, unreadCount, total } = await notificationService.getNotifications({
             userId,
@@ -40,11 +45,17 @@ export async function GET(request) {
 /**
  * POST /api/notifications
  * Sends a targeted notification or broadcasts a system-wide announcement.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function POST(request) {
     try {
+        const rawBody = await request.json().catch(() => ({}));
+        const bodyVal = validateWithSchema(notificationCreateSchema, rawBody);
+        if (!bodyVal.success) return bodyVal.errorResponse;
+        const body = bodyVal.data;
+
         const session = await getAuthenticatedSession(request);
-        const body = await request.json();
 
         // 1. Broadcast announcement (Admin only)
         if (body.broadcast) {
@@ -57,9 +68,6 @@ export async function POST(request) {
             if (!roleAuth.authorized) return roleAuth.errorResponse;
 
             const { title, message, targetRoles, priority, link } = body;
-            if (!title || !message) {
-                return NextResponse.json({ error: 'Title and message are required for broadcast.' }, { status: 400 });
-            }
 
             const result = await notificationService.broadcastAnnouncement({
                 title,
@@ -84,9 +92,6 @@ export async function POST(request) {
 
         // 2. Targeted Notification
         const { recipientId, targetRoles, title, message, category, type, link, sendEmail, recipientEmail } = body;
-        if (!title || !message) {
-            return NextResponse.json({ error: 'Title and message are required.' }, { status: 400 });
-        }
 
         const result = await notificationService.sendNotification({
             recipientId,
@@ -113,11 +118,17 @@ export async function POST(request) {
 /**
  * PUT /api/notifications
  * Marks individual notification as read or marks all as read.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function PUT(request) {
     try {
+        const rawBody = await request.json().catch(() => ({}));
+        const bodyVal = validateWithSchema(notificationUpdateSchema, rawBody);
+        if (!bodyVal.success) return bodyVal.errorResponse;
+        const body = bodyVal.data;
+
         const session = await getAuthenticatedSession(request);
-        const body = await request.json();
         const { notificationId, markAll } = body;
 
         const userId = session?.userId || 'u_student_1';

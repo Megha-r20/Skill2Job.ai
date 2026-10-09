@@ -2,18 +2,26 @@ import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { sendEmailOtp, sendSmsOtp, otpRepository } from '@/lib/otpService';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { otpSendSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'otp');
         if (!rateLimit.allowed) {
             return rateLimit.response;
         }
-        const body = await request.json();
-        const { identifier, type, purpose = 'registration', name = 'Skill2Job User' } = body;
-        if (!identifier || typeof identifier !== 'string') {
-            return NextResponse.json({ error: 'Valid email address or phone number is required.' }, { status: 400 });
+
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(otpSendSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
         }
+
+        const { identifier, type, purpose, name } = validation.data;
         const cleanIdentifier = identifier.trim().toLowerCase();
         const channelType = type || (cleanIdentifier.includes('@') ? 'email' : 'phone');
         // 1. Duplicate Account Prevention for Registration

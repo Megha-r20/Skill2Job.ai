@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { interviewQuestionsQuerySchema, validateQueryParams } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'ai');
         if (!rateLimit.allowed) {
             return rateLimit.response;
         }
-        const { searchParams } = new URL(request.url);
-        const role = searchParams.get('role') || 'Software Developer';
-        const category = searchParams.get('category');
+
+        const validation = validateQueryParams(interviewQuestionsQuerySchema, request);
+        const { role, category } = validation.success ? validation.data : { role: 'Software Developer', category: null };
         let questions = [];
         if (questions.length === 0) {
             questions = [];

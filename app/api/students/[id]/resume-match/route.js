@@ -5,6 +5,8 @@ import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/li
 import { storageService } from '@/lib/services/storageService';
 import { applyRateLimit } from '@/lib/rateLimit';
 import { promptGuard } from '@/lib/security/promptGuard';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
+
 async function extractPdfText(buffer) {
     try {
         const pdfModule = require('pdf-parse');
@@ -23,8 +25,17 @@ async function extractPdfText(buffer) {
     return '';
 }
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request, { params }) {
     try {
+        const paramVal = validateWithSchema(idParamSchema, params);
+        if (!paramVal.success) return paramVal.errorResponse;
+        const studentId = paramVal.data.id;
+
         const rateLimit = await applyRateLimit(request, 'ai');
         if (!rateLimit.allowed) {
             return rateLimit.response;
@@ -35,7 +46,7 @@ export async function POST(request, { params }) {
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
-        const ownerAuth = await authorizeOwnership(session, params.id, 'student');
+        const ownerAuth = await authorizeOwnership(session, studentId, 'student');
         if (!ownerAuth.authorized) {
             return ownerAuth.errorResponse;
         }
@@ -47,7 +58,6 @@ export async function POST(request, { params }) {
         }
         // Convert file to buffer and validate magic bytes
         const buffer = Buffer.from(await file.arrayBuffer());
-        const studentId = params.id;
 
         // 1. Check Magic Bytes and upload to secure storage (S3 / Vercel Blob / HMAC signed URLs)
         let uploadResult;

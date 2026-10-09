@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
 import { certificateRepository } from '@/lib/repositories/certificateRepository';
+import { certificateVerifyQuerySchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const body = await request.json().catch(() => ({}));
         const certificateNumber = body.certificateNumber || body.id || body.code;
-
-        if (!certificateNumber) {
-            return NextResponse.json({
-                success: false,
-                error: 'Certificate number or verification code is required.'
-            }, { status: 400 });
+        const validation = validateWithSchema(certificateVerifyQuerySchema, { certificateNumber });
+        if (!validation.success) {
+            return validation.errorResponse;
         }
 
         const cert = await certificateRepository.findByCertificateNumber(certificateNumber);

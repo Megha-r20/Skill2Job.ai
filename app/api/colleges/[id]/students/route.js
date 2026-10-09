@@ -1,8 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
+        const collegeId = paramValidation.data.id;
         const session = await getAuthenticatedSession(request);
         // 1. Only College and Admin can view student roster for that college
         const roleAuth = authorizeRole(session, ['college', 'admin']);
@@ -10,14 +23,14 @@ export async function GET(request, { params }) {
             return roleAuth.errorResponse;
         // 2. Enforce institution boundary check
         if (session?.role === 'college') {
-            const ownerAuth = await authorizeOwnership(session, params.id, 'college');
+            const ownerAuth = await authorizeOwnership(session, collegeId, 'college');
             if (!ownerAuth.authorized)
                 return ownerAuth.errorResponse;
         }
         const { searchParams } = new URL(request.url);
         const filter = searchParams.get('filter'); // 'placement_ready' | 'needs_training' | 'all'
         const department = searchParams.get('department');
-        let students = await (await prisma.student.findMany()).filter(s => s.collegeId === params.id);
+        let students = await (await prisma.student.findMany()).filter(s => s.collegeId === collegeId);
         if (filter === 'placement_ready') {
             students = students.filter(s => s.placementReadiness >= 80 || s.placementStatus === 'Placement Ready');
         }

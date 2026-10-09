@@ -1,12 +1,26 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedSession } from '@/lib/authMiddleware';
 import { resumeService } from '@/lib/services/resumeService';
+import { resumeBuilderQuerySchema, validateQueryParams, validateWithSchema } from '@/lib/validations';
+import { z } from 'zod';
 
+const resumeBuilderPostSchema = z.object({
+    studentId: z.string().optional(),
+    resumeData: z.record(z.any()).or(z.string()),
+    jobDescription: z.string().optional(),
+    targetRole: z.string().optional()
+});
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const session = await getAuthenticatedSession(request);
-        const { searchParams } = new URL(request.url);
-        const studentId = searchParams.get('studentId') || session?.userId || 'std_1';
+        const queryValidation = validateQueryParams(resumeBuilderQuerySchema, request);
+        const queryStudentId = queryValidation.success ? queryValidation.data.studentId : null;
+        const studentId = queryStudentId || session?.userId || 'std_1';
 
         const resumeData = await resumeService.buildResumeFromProfile(studentId);
 
@@ -24,20 +38,22 @@ export async function GET(request) {
     }
 }
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const session = await getAuthenticatedSession(request);
-        const body = await request.json().catch(() => ({}));
-        const studentId = body.studentId || session?.userId || 'std_1';
-
-        // Returns formatted ATS resume string and updated data
-        const { resumeData } = body;
-        if (!resumeData) {
-            return NextResponse.json({
-                success: false,
-                error: 'Resume data is required to generate formatted output.'
-            }, { status: 400 });
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(resumeBuilderPostSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
         }
+
+        const body = validation.data;
+        const studentId = body.studentId || session?.userId || 'std_1';
+        const { resumeData } = body;
 
         const atsEvaluation = resumeService.calculateAtsScore(
             JSON.stringify(resumeData),

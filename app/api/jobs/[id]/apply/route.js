@@ -2,21 +2,36 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateJobMatch } from '@/lib/ai';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
+import { idParamSchema, jobApplySchema, validateWithSchema } from '@/lib/validations';
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
         const session = await getAuthenticatedSession(request);
         const roleAuth = authorizeRole(session, ['student']);
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
-        const body = await request.json();
+
+        const rawBody = await request.json().catch(() => ({}));
+        const bodyValidation = validateWithSchema(jobApplySchema.partial(), rawBody);
+        const body = bodyValidation.success ? bodyValidation.data : rawBody;
         const { studentId: reqStudentId, notes } = body;
         const studentId = reqStudentId || session.studentId || session.userId;
         const ownerAuth = await authorizeOwnership(session, studentId, 'student');
         if (!ownerAuth.authorized) {
             return ownerAuth.errorResponse;
         }
-        const job = await prisma.job.findUnique({ where: { id: params.id } });
+        const job = await prisma.job.findUnique({ where: { id: paramValidation.data.id } });
         if (!job) {
             return NextResponse.json({ error: 'Job not found' }, { status: 404 });
         }

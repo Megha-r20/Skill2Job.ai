@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+
 export const revalidate = 60; // Cache these heavy aggregations for 60 seconds (Phase 15)
+
+/**
+ * GET /api/admin/stats
+ * Retrieves global platform analytics, total counts, and recent activity. Admin only.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const session = await getAuthenticatedSession(request);

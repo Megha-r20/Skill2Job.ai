@@ -2,9 +2,23 @@ import { NextResponse } from 'next/server';
 import { getCareerRecommendations } from '@/lib/ai';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { idParamSchema, recommendationsQuerySchema, validateWithSchema, validateQueryParams } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request, { params }) {
     try {
+        const paramVal = validateWithSchema(idParamSchema, params);
+        if (!paramVal.success) return paramVal.errorResponse;
+        const studentId = paramVal.data.id;
+
+        const queryVal = validateQueryParams(recommendationsQuerySchema, request);
+        if (!queryVal.success) return queryVal.errorResponse;
+        const query = queryVal.data.query;
+
         const rateLimit = await applyRateLimit(request, 'ai');
         if (!rateLimit.allowed) {
             return rateLimit.response;
@@ -14,13 +28,12 @@ export async function GET(request, { params }) {
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
-        const ownerAuth = await authorizeOwnership(session, params.id, 'student');
+        const ownerAuth = await authorizeOwnership(session, studentId, 'student');
         if (!ownerAuth.authorized) {
             return ownerAuth.errorResponse;
         }
-        const { searchParams } = new URL(request.url);
-        const query = searchParams.get('query') || 'Software Developer';
-        const recommendation = await getCareerRecommendations(params.id, query);
+
+        const recommendation = await getCareerRecommendations(studentId, query);
         return NextResponse.json({
             success: true,
             query,

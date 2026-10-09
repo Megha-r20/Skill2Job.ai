@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { calculateJobMatch } from '@/lib/ai';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
 import { studentRepository } from '@/lib/repositories/studentRepository';
+import { recruiterCandidatesQuerySchema, validateQueryParams } from '@/lib/validations';
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const session = await getAuthenticatedSession(request);
@@ -10,6 +16,8 @@ export async function GET(request) {
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
+
+        const queryValidation = validateQueryParams(recruiterCandidatesQuerySchema, request);
         const { searchParams } = new URL(request.url);
         const skill = searchParams.get('skill')?.toLowerCase();
         const collegeId = searchParams.get('collegeId');

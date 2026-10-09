@@ -1,19 +1,23 @@
 import { NextResponse } from 'next/server';
 import { storageService, verifyLocalSignedUrl } from '@/lib/services/storageService';
 import { getAuthenticatedSession } from '@/lib/authMiddleware';
+import { storageFileQuerySchema, validateQueryParams } from '@/lib/validations';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * GET /api/storage/file
+ * Securely serves files from local/cloud storage with cryptographic HMAC and authentication check.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const key = searchParams.get('key');
-        const expires = searchParams.get('expires');
-        const sig = searchParams.get('sig');
-
-        if (!key || !expires || !sig) {
+        const queryVal = validateQueryParams(storageFileQuerySchema, request);
+        if (!queryVal.success) {
             return NextResponse.json({ error: 'Missing required signed URL parameters' }, { status: 400 });
         }
+        const { key, expires, sig } = queryVal.data;
 
         // 1. Verify cryptographic HMAC signature and timestamp
         const isValidSignature = verifyLocalSignedUrl(key, expires, sig);

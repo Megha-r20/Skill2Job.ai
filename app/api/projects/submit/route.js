@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
+import { projectSubmitSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const session = await getAuthenticatedSession(request);
@@ -10,17 +15,19 @@ export async function POST(request) {
             return roleAuth.errorResponse;
         }
 
-        const body = await request.json();
-        const { studentId: reqStudentId, projectId, title, description, technologies, githubUrl, liveUrl } = body;
-        const studentId = reqStudentId || session.studentId || session.userId;
+        const rawBody = await request.json().catch(() => ({}));
+        const studentId = rawBody.studentId || session.studentId || session.userId;
+        const validation = validateWithSchema(projectSubmitSchema, { ...rawBody, studentId });
+        if (!validation.success) {
+            return validation.errorResponse;
+        }
+
+        const body = validation.data;
+        const { projectId, title, description, technologies, githubUrl, liveUrl } = body;
 
         const ownerAuth = await authorizeOwnership(session, studentId, 'student');
         if (!ownerAuth.authorized) {
             return ownerAuth.errorResponse;
-        }
-
-        if (!studentId || !title) {
-            return NextResponse.json({ success: false, error: 'Student ID and project title are required.' }, { status: 400 });
         }
 
         let student = null;

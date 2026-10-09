@@ -1,9 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateJobMatch } from '@/lib/ai';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request, { params }) {
     try {
-        const job = await prisma.job.findUnique({ where: { id: params.id } });
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
+        const jobId = paramValidation.data.id;
+        const job = await prisma.job.findUnique({ where: { id: jobId } });
         if (!job) {
             return NextResponse.json({ error: 'Job not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
         }

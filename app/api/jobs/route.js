@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { jobRepository } from '@/lib/repositories/jobRepository';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { jobPublishSchema, validateWithSchema } from '@/lib/validations';
+
 export const revalidate = 60; // Cache this route for 60 seconds (Phase 15)
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -28,6 +35,11 @@ export async function GET(request) {
         return NextResponse.json({ error: error.message }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     }
 }
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const session = await getAuthenticatedSession(request);
@@ -35,10 +47,17 @@ export async function POST(request) {
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
-        const body = await request.json();
+
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(jobPublishSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
+        }
+
+        const body = validation.data;
         const { companyId, companyName, companyLogo, title, department, description, responsibilities, requirements, requiredSkills, location, workMode, salary, employmentType, minCgpa, graduationYear, degree, branch, openings, deadline } = body;
-        if (!title || !requiredSkills || !Array.isArray(requiredSkills)) {
-            return NextResponse.json({ error: 'Job title and required skills array are required.' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
+        if (!requiredSkills || requiredSkills.length === 0) {
+            return NextResponse.json({ error: 'Job title and required skills array are required.' }, { status: 400 });
         }
         const assignedCompanyId = session.role === 'company' && session.companyId ? session.companyId : (companyId || 'comp_1');
         const newJob = {

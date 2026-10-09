@@ -2,10 +2,23 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
 
 const analyzeCurriculumGaps = (a) => [];
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
+        const collegeId = paramValidation.data.id;
         const rateLimit = await applyRateLimit(request, 'ai');
         if (!rateLimit.allowed) {
             return rateLimit.response;
@@ -16,12 +29,12 @@ export async function GET(request, { params }) {
             return roleAuth.errorResponse;
         }
         if (session.role === 'college') {
-            const ownerAuth = await authorizeOwnership(session, params.id, 'college');
+            const ownerAuth = await authorizeOwnership(session, collegeId, 'college');
             if (!ownerAuth.authorized) {
                 return ownerAuth.errorResponse;
             }
         }
-        const college = await prisma.college.findUnique({ where: { id: params.id } });
+        const college = await prisma.college.findUnique({ where: { id: collegeId } });
         if (!college) {
             return NextResponse.json({ error: 'College not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
         }

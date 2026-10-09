@@ -1,32 +1,42 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedSession, authorizeRole, authorizeOwnership } from '@/lib/authMiddleware';
 import { profileImportService } from '@/lib/services/profileImportService';
+import { idParamSchema, codingProfilePlatformImportSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request, { params }) {
     try {
+        const paramVal = validateWithSchema(idParamSchema, params);
+        if (!paramVal.success) return paramVal.errorResponse;
+        const studentId = paramVal.data.id;
+
         const session = await getAuthenticatedSession(request);
         const roleAuth = authorizeRole(session, ['student']);
         if (!roleAuth.authorized) {
             return roleAuth.errorResponse;
         }
 
-        const ownerAuth = await authorizeOwnership(session, params.id, 'student');
+        const ownerAuth = await authorizeOwnership(session, studentId, 'student');
         if (!ownerAuth.authorized) {
             return ownerAuth.errorResponse;
         }
 
-        const body = await request.json().catch(() => ({}));
-        const { platform, username } = body;
-
-        if (!platform || !username) {
-            return NextResponse.json({ error: 'Both platform ("github" | "leetcode") and username are required' }, { status: 400 });
+        const rawBody = await request.json().catch(() => ({}));
+        const bodyVal = validateWithSchema(codingProfilePlatformImportSchema, rawBody);
+        if (!bodyVal.success) {
+            return bodyVal.errorResponse;
         }
+        const { platform, username } = bodyVal.data;
 
         const cleanPlatform = String(platform).trim().toLowerCase();
 
         if (cleanPlatform === 'github') {
             const importData = await profileImportService.importGitHubProfile(username);
-            const appliedSkills = await profileImportService.applyImportedSkillsToStudent(params.id, importData.verifiedSkills);
+            const appliedSkills = await profileImportService.applyImportedSkillsToStudent(studentId, importData.verifiedSkills);
             return NextResponse.json({
                 success: true,
                 platform: 'github',
@@ -35,7 +45,7 @@ export async function POST(request, { params }) {
             });
         } else if (cleanPlatform === 'leetcode') {
             const importData = await profileImportService.importLeetCodeProfile(username);
-            const appliedSkills = await profileImportService.applyImportedSkillsToStudent(params.id, [importData.verifiedSkill]);
+            const appliedSkills = await profileImportService.applyImportedSkillsToStudent(studentId, [importData.verifiedSkill]);
             return NextResponse.json({
                 success: true,
                 platform: 'leetcode',

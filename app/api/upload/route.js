@@ -3,6 +3,12 @@ import { getAuthenticatedSession } from '@/lib/authMiddleware';
 import { storageService } from '@/lib/services/storageService';
 import { validateFileMagicBytes } from '@/lib/utils/fileValidation';
 
+/**
+ * POST /api/upload
+ * Validates magic bytes, checks file limits, and stores authenticated uploads.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const session = await getAuthenticatedSession(request);

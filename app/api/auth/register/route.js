@@ -4,6 +4,11 @@ import { verifyGoogleIdToken } from '@/lib/googleAuth';
 import { signSessionToken, logSecurityEvent } from '@/lib/authMiddleware';
 import { registerSchema } from '@/lib/validations';
 import { applyRateLimit } from '@/lib/rateLimit';
+
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'auth');

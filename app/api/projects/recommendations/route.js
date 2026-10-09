@@ -142,6 +142,10 @@ const ALL_CATALOG_PROJECTS = [
   }
 ];
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
   try {
     const rateLimit = await applyRateLimit(request, 'ai');

@@ -1,15 +1,36 @@
 import { NextResponse } from 'next/server';
 import { placementDriveRepository } from '@/lib/repositories/placementDriveRepository';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
+import { z } from 'zod';
+
+const createDriveBodySchema = z.object({
+    companyName: z.string().min(1, 'Company Name is required'),
+    title: z.string().min(1, 'Drive Title is required'),
+    departments: z.array(z.string()).optional(),
+    minCgpa: z.union([z.number(), z.string()]).optional(),
+    packageCtc: z.string().optional(),
+    driveDate: z.string().optional(),
+    openings: z.union([z.number(), z.string()]).optional(),
+    mode: z.string().optional()
+});
 
 /**
  * GET /api/colleges/[id]/placement-drives
  * Returns list of on-campus & virtual placement drives with telemetry metrics.
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function GET(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
         const session = await getAuthenticatedSession(request);
-        const collegeId = params.id || 'col_1';
+        const collegeId = paramValidation.data.id || 'col_1';
 
         // Check authentication if session exists
         if (session) {
@@ -61,26 +82,32 @@ export async function GET(request, { params }) {
 /**
  * POST /api/colleges/[id]/placement-drives
  * Schedules a new placement drive.
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function POST(request, { params }) {
     try {
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
         const session = await getAuthenticatedSession(request);
-        const collegeId = params.id || 'col_1';
+        const collegeId = paramValidation.data.id || 'col_1';
 
         if (session) {
             const roleAuth = authorizeRole(session, ['college', 'admin']);
             if (!roleAuth.authorized) return roleAuth.errorResponse;
         }
 
-        const body = await request.json();
-        const { companyName, title, departments, minCgpa, packageCtc, driveDate, openings, mode } = body;
-
-        if (!companyName || !title) {
-            return NextResponse.json(
-                { error: 'Company Name and Drive Title are required.' },
-                { status: 400 }
-            );
+        const body = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(createDriveBodySchema, body);
+        if (!validation.success) {
+            return validation.errorResponse;
         }
+
+        const { companyName, title, departments, minCgpa, packageCtc, driveDate, openings, mode } = body;
 
         const newDrive = await placementDriveRepository.create({
             collegeId,

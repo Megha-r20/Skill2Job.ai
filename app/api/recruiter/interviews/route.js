@@ -2,10 +2,27 @@ import { NextResponse } from 'next/server';
 import { applicationRepository } from '@/lib/repositories/applicationRepository';
 import { recruiterNotificationService } from '@/lib/services/recruiterNotificationService';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
+import { validateWithSchema } from '@/lib/validations';
+import { z } from 'zod';
+
+const scheduleInterviewSchema = z.object({
+    applicationId: z.string().min(1, 'Application ID is required'),
+    date: z.string().min(1, 'Interview date is required'),
+    time: z.string().min(1, 'Interview time is required'),
+    timezone: z.string().optional(),
+    roundType: z.string().optional(),
+    format: z.string().optional(),
+    meetingLink: z.string().optional(),
+    interviewers: z.string().optional(),
+    notes: z.string().optional(),
+    companyId: z.string().optional()
+});
 
 /**
  * GET /api/recruiter/interviews
  * Retrieves all scheduled interviews across all candidates for the recruiter's company.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function GET(request) {
     try {
@@ -63,12 +80,19 @@ export async function GET(request) {
 /**
  * POST /api/recruiter/interviews
  * Schedules an interview round for a candidate and triggers an email notification.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
  */
 export async function POST(request) {
     try {
-        const session = await getAuthenticatedSession(request);
-        const body = await request.json();
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(scheduleInterviewSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
+        }
 
+        const body = validation.data;
+        const session = await getAuthenticatedSession(request);
         let effectiveSession = session;
         if (!effectiveSession && process.env.NODE_ENV !== 'production') {
             effectiveSession = {
@@ -85,13 +109,6 @@ export async function POST(request) {
         }
 
         const { applicationId, date, time, timezone = 'IST', roundType = 'Technical Interview', format = 'Google Meet', meetingLink, interviewers, notes } = body;
-
-        if (!applicationId || !date || !time) {
-            return NextResponse.json(
-                { error: 'Application ID, interview date, and time are required.' },
-                { status: 400 }
-            );
-        }
 
         const app = await applicationRepository.findById(applicationId);
         if (!app) {

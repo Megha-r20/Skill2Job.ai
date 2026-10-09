@@ -6,6 +6,10 @@ import { signSessionToken, logSecurityEvent, getAuthenticatedSession } from '@/l
 import { loginSchema } from '@/lib/validations';
 import { applyRateLimit } from '@/lib/rateLimit';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         // Rate limit check based on IP and auth tier

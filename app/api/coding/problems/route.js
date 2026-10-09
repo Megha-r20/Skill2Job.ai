@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { codingProblemRepository } from '@/lib/repositories/codingProblemRepository';
+import { codingProblemsQuerySchema, validateQueryParams } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const topic = searchParams.get('topic');
-        const difficulty = searchParams.get('difficulty');
+        const validation = validateQueryParams(codingProblemsQuerySchema, request);
+        const { difficulty, category: topic } = validation.success ? validation.data : {};
         const problems = codingProblemRepository.findAll({ topic, difficulty });
         return NextResponse.json({
             success: true,

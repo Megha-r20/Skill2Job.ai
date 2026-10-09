@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+
+/**
+ * GET /api/health
+ * Verifies database connection, AI engine configuration, and deployment status.
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET() {
     try {
         // 1. Test Database Connection

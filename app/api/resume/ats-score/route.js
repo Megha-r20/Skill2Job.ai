@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import { resumeService } from '@/lib/services/resumeService';
 import { applyRateLimit } from '@/lib/rateLimit';
 import { promptGuard } from '@/lib/security/promptGuard';
+import { atsScoreSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         // 1. Rate Limiting on Costly AI Operations
@@ -11,8 +16,14 @@ export async function POST(request) {
             return rateLimit.response;
         }
 
-        const body = await request.json().catch(() => ({}));
-        const { resumeText, jobDescription, targetRole } = body;
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(atsScoreSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
+        }
+
+        const { resumeText, jobDescription } = validation.data;
+        const targetRole = rawBody?.targetRole;
 
         // 2. Input Size and Prompt-Injection Security Checks
         const guardResult = await promptGuard.validateAndSanitizeResume(resumeText, {

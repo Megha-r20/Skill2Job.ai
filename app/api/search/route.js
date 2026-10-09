@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { jobRepository } from '@/lib/repositories/jobRepository';
 import { courseRepository } from '@/lib/repositories/courseRepository';
+import { platformSearchQuerySchema, validateQueryParams } from '@/lib/validations';
 
 export const TECHNICAL_SKILLS = [
     {
@@ -142,11 +143,18 @@ export const VERIFIED_COMPANIES = [
     }
 ];
 
+/**
+ * GET /api/search
+ * Platform-wide search across jobs, courses, technical skills, and companies.
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const query = (searchParams.get('q') || searchParams.get('query') || '').trim();
-        const category = searchParams.get('category') || 'ALL';
+        const queryVal = validateQueryParams(platformSearchQuerySchema, request);
+        if (!queryVal.success) return queryVal.errorResponse;
+        const query = (queryVal.data.q || queryVal.data.query || '').trim();
+        const category = queryVal.data.category || 'ALL';
 
         let jobs = await jobRepository.search({ query });
         let courses = await courseRepository.findAll();

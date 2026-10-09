@@ -2,24 +2,26 @@ import { NextResponse } from 'next/server';
 import { userRepository } from '@/lib/repositories/userRepository';
 import { otpRepository } from '@/lib/repositories/otpRepository';
 import { applyRateLimit } from '@/lib/rateLimit';
+import { resetPasswordSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function POST(request) {
     try {
         const rateLimit = await applyRateLimit(request, 'auth');
         if (!rateLimit.allowed) {
             return rateLimit.response;
         }
-        const body = await request.json();
-        const { identifier, code, newPassword, confirmPassword } = body;
-        if (!identifier || !code || !newPassword) {
-            return NextResponse.json({ error: 'Identifier, verification code, and new password are required.' }, { status: 400 });
+
+        const rawBody = await request.json().catch(() => ({}));
+        const validation = validateWithSchema(resetPasswordSchema, rawBody);
+        if (!validation.success) {
+            return validation.errorResponse;
         }
-        if (newPassword.length < 6) {
-            return NextResponse.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
-        }
-        if (confirmPassword && newPassword !== confirmPassword) {
-            return NextResponse.json({ error: 'Passwords do not match.' }, { status: 400 });
-        }
+
+        const { identifier, code, newPassword } = validation.data;
         // Verify OTP code
         const otpResult = await otpRepository.verifyOtp({
             identifier: identifier.trim().toLowerCase(),

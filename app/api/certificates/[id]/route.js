@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { certificateRepository } from '@/lib/repositories/certificateRepository';
+import { idParamSchema, validateWithSchema } from '@/lib/validations';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @param {{ params: { id: string } }} context
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request, { params }) {
     try {
-        const certId = params.id;
+        const paramValidation = validateWithSchema(idParamSchema, params);
+        if (!paramValidation.success) {
+            return paramValidation.errorResponse;
+        }
+
+        const certId = paramValidation.data.id;
         const cert = await certificateRepository.findByCertificateNumber(certId);
 
         if (!cert) {

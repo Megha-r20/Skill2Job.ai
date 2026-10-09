@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getAuthenticatedSession, authorizeRole } from '@/lib/authMiddleware';
 
+/**
+ * @param {import('next/server').NextRequest} request
+ * @returns {Promise<import('next/server').NextResponse>}
+ */
 export async function GET(request) {
     try {
         const session = await getAuthenticatedSession(request);
